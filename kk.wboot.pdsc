@@ -3,7 +3,7 @@
 <package schemaVersion="1.7.28" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="https://raw.githubusercontent.com/Open-CMSIS-Pack/Open-CMSIS-Pack-Spec/v1.7.28/schema/PACK.xsd">
   <vendor>kk</vendor>
   <name>wboot</name>
-  <description>A software framework that provides the necessary software infrastructure, services, and macros to support some high-level abstract concepts.</description>
+  <description>A bootloader with streamlined design and small size, suitable for embedded systems with limited resources.</description>
   <url>https://github.com/Aladdin-Wang/wboot/</url>
   <supportContact>https://github.com/Aladdin-Wang/wboot/issues</supportContact>
   <license>LICENSE</license>
@@ -86,8 +86,8 @@
 		
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
-		  <require Cclass="FrameWork" Cgroup="wboot" Csub="FlashDrv"/>
-		  <require Cclass="FrameWork" Cgroup="wboot" Csub="Core"/>		  
+		  <require Cclass="Boot" Cgroup="wboot" Csub="FlashDrv"/>
+		  <require Cclass="Boot" Cgroup="wboot" Csub="Core"/>		  
 		</condition>
 		
         <condition id="Cortex-M Arm GCC">
@@ -144,7 +144,7 @@
   <components>
     <!-- signals_slots 组件 -->
     <component Cclass="Boot" Cversion="0.9.1" Csub="Core" Cgroup="wboot" >
-      <description>A signal and slot module implemented in C language.</description>
+      <description>Contains components such as queue, shell, ymodem, subscribe_publish, signals_slots.</description>
 		<files>
 			<file category="include" name="source/"/>
 			<file category="header" name="template/wl_user_app_cfg.h" attr="config" version="0.9.1"/>
@@ -192,7 +192,7 @@
 
   <!-- optional taxonomy section for defining new component Class and Group names -->
   <taxonomy>
-    <description Cclass="Boot" Cgroup="wboot" doc="documents/Doxygen/html/index.html">A software framework that provides the necessary software infrastructure, services, and macros to support some high-level abstract concepts.</description>
+    <description Cclass="Boot" Cgroup="wboot" doc="documents/Doxygen/html/index.html">A bootloader with streamlined design and small size, suitable for embedded systems with limited resources.</description>
   </taxonomy>
 </package>
 
