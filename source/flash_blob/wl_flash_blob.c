@@ -56,7 +56,7 @@ uint32_t get_flash_sector(uint32_t Address)
     uint32_t wSectorSize = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex].szSector;
     uint32_t Adr = Address - ptFlashDevice->ptFlashDev->DevAdr;
 
-    for(wSector = 0; wSector < SECTOR_NUM; wSector++) {
+    for(wSector = 0; wSector < 0XFF; wSector++) {
 
         if((Adr >= wSectorStart && Adr < wSectorStart + wSectorSize)) {
             break;

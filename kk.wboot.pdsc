@@ -89,8 +89,8 @@
 		
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
-		  <require Cclass="Boot" Cgroup="wboot" Csub="FlashDrv"/>
-		  <require Cclass="Boot" Cgroup="wboot" Csub="Core"/>		  
+		  <require Cclass="BootServe" Cgroup="wboot" Csub="FlashDrv"/>
+		  <require Cclass="BootServe" Cgroup="wboot" Csub="Core"/>		  
 		</condition>
 		
         <condition id="Cortex-M Arm GCC">
@@ -146,7 +146,7 @@
     </conditions>  
   <components>
     <!-- signals_slots 组件 -->
-    <component Cclass="Boot" Cversion="0.9.2" Csub="Core" Cgroup="wboot" >
+    <component Cclass="BootServe" Cversion="0.9.2" Csub="Core" Cgroup="wboot" >
       <description>Contains components such as queue, shell, ymodem, subscribe_publish, signals_slots.</description>
 		<files>
 			<file category="include" name="source/"/>
@@ -168,7 +168,7 @@
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
          </Pre_Include_Global_h>
     </component>
-    <component Cclass="Boot" Cversion="0.9.2" Csub="FlashDrv" Cgroup="wboot" Cvariant="STM32"  condition="FlashDrv">
+    <component Cclass="BootServe" Cversion="0.9.2" Csub="FlashDrv" Cgroup="wboot" Cvariant="STM32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
@@ -176,7 +176,7 @@
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DRV.c"/> 
         </files>
     </component>
-    <component Cclass="Boot" Cversion="0.9.2" Csub="FlashDrv" Cgroup="wboot" Cvariant="GD32"  condition="FlashDrv">
+    <component Cclass="BootServe" Cversion="0.9.2" Csub="FlashDrv" Cgroup="wboot" Cvariant="GD32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
@@ -184,7 +184,7 @@
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DRV.c"/> 
         </files>
     </component>	
-    <component Cclass="Boot" Cversion="0.9.2" Csub="Bootloader" Cgroup="wboot" condition="Bootloader">
+    <component Cclass="BootServe" Cversion="0.9.2" Csub="Bootloader" Cgroup="wboot" condition="Bootloader">
         <description>wboot bootloader</description>
         <files>
             <file category="sourceC" name="source/bootloader/bootloader.c"/>
@@ -195,7 +195,7 @@
 
   <!-- optional taxonomy section for defining new component Class and Group names -->
   <taxonomy>
-    <description Cclass="Boot" Cgroup="wboot" doc="documents/Doxygen/html/index.html">A bootloader with streamlined design and small size, suitable for embedded systems with limited resources.</description>
+    <description Cclass="BootServe" Cgroup="wboot" doc="documents/Doxygen/html/index.html">A bootloader with streamlined design and small size, suitable for embedded systems with limited resources.</description>
   </taxonomy>
 </package>
 

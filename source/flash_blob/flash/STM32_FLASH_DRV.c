@@ -11,8 +11,7 @@
     #define M32(adr) (*((vu32 *) (adr)))
     // FLASH BANK size
     #define BANK1_SIZE      0x00080000      // Bank1 Size = 512kB
-    // Flash Keys
-    #define RDPRT_KEY       0x5AA5
+
     // Flash Control Register definitions
     #define FLASH_PG        0x00000001
     #define FLASH_PER       0x00000002
@@ -37,8 +36,6 @@
 
     #define M16(adr) (*((vu16 *) (adr)))
     #define M32(adr) (*((vu32 *) (adr)))
-    // Flash Keys
-    #define RDPRT_KEY       0x55AA
 
     // Flash Control Register definitions
     #define FLASH_PG                ((unsigned int)(1ul << 0))
@@ -64,17 +61,22 @@ typedef          unsigned long     u32;
 
 #define M32(adr) (*((vu32 *) (adr)))
 #define FLASH_SR_MISSERR        ((u32)(  1U <<  8))
+u32 flashBase;                   /* Flash base address */
+u32 flashSize;                   /* Flash size in bytes */
+u32 flashBankSize;               /* Flash bank size in bytes */
+u32 flashPageSize;               /* Flash page size in bytes */
 static void DSB(void)
 {
     __asm("DSB");
 }
 
 /* Flash Keys */
+#if !defined  (USE_HAL_DRIVER)
 #define FLASH_KEY1               0x45670123
 #define FLASH_KEY2               0xCDEF89AB
 #define FLASH_OPTKEY1            0x08192A3B
 #define FLASH_OPTKEY2            0x4C5D6E7F
-
+#endif
 /* Flash Control Register definitions */
 
 #define FLASH_CR_PNB_MSK        ((u32)(0x7F <<  3))
@@ -91,7 +93,57 @@ static void DSB(void)
 #define FLASH_OPTR_RDP_NO       ((u32)(0xAA      ))
 #define FLASH_OPTR_DBANK        ((u32)(  1U << 22))
 
+static u32 GetFlashType (void) {
+  u32 flashType;
 
+  switch ((DBGMCU->IDCODE & 0xFFFU)) {
+    case 0x468:             /* Flash Category 2 devices, 2k sectors */
+    case 0x479:             /* Flash Category 4 devices, 2k sectors */
+                            /* devices have only a singe bank flash */
+      flashType = 0U;       /* Single-Bank Flash type */
+    break;
+
+    case 0x469:             /* Flash Category 3 devices, 2k or 4k sectors */
+    default:                /* devices have a dual bank flash, configurable via FLASH_OPTR.DBANK */
+      flashType = 1U;       /* Dual-Bank Flash type */
+    break;
+  }
+
+  return (flashType);
+}
+static u32 GetFlashBankMode (void) {
+  u32 flashBankMode;
+
+  flashBankMode = (FLASH->OPTR & FLASH_OPTR_DBANK) ? 1U : 0U;
+
+  return (flashBankMode);
+}
+static u32 GetFlashBankNum(u32 adr) {
+  u32 flashBankNum;
+
+  if (GetFlashType() == 1U) {
+    /* Dual-Bank Flash */
+    if (GetFlashBankMode() == 1U) {
+      /* Dual-Bank Flash configured as Dual-Bank */
+      if (adr >= (flashBase + flashBankSize)) {
+        flashBankNum = 1U;
+      }
+      else {
+        flashBankNum = 0U;
+      }
+    }
+    else {
+      /* Dual-Bank Flash configured as Single-Bank */
+      flashBankNum = 0U;
+    }
+  }
+  else {
+    /* Single-Bank Flash */
+    flashBankNum = 0u;
+  }
+
+  return (flashBankNum);
+}
 #endif
 #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
     defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
@@ -106,7 +158,6 @@ static void DSB(void)
     #define M16(adr) (*((vu16 *) (adr)))
     #define M32(adr) (*((vu32 *) (adr)))
     // Flash Keys
-    #define RDPRT_KEY       0x00A5
     #define FLASH_KEY1      0x45670123
     #define FLASH_KEY2      0xCDEF89AB
     #define FLASH_OPTKEY1   0x08192A3B
@@ -151,11 +202,6 @@ typedef volatile unsigned long    vu32;
 typedef          unsigned long     u32;
 
 #define M32(adr) (*((vu32 *) (adr)))
-
-/* Flash Keys */
-#define FLASH_PDKEY1         0x04152637  /* Flash power down key1 */
-#define FLASH_PDKEY2         0xFAFBFCFD  /* Flash power down key2: used with FLASH_PDKEY1 to unlock the RUN_PD bit in FLASH_ACR */
-
 
 /* Flash Control Register definitions */
 #define FLASH_CR_PSIZE_2    (2U <<  4)   /* Flash program/erase by 32 bits */
@@ -205,10 +251,12 @@ static int32_t Init(uint32_t adr, uint32_t clk, uint32_t fnc)
     #elif defined(STM32G431xx)
     FLASH->KEYR = FLASH_KEY1;                              /* Unlock Flash operation */
     FLASH->KEYR = FLASH_KEY2;
-
+	
     /* Wait until the flash is ready */
     while (FLASH->SR & FLASH_SR_BSY);
-
+	flashBase = adr;
+    flashSize = ((*((u32 *)FLASHSIZE_BASE)) & 0x0000FFFF) << 10;
+    flashBankSize = flashSize >> 1;
     #elif defined (STM32F103xE) || defined(STM32F105xC)
     base_adr = adr & ~(BANK1_SIZE - 1);          // Align to Size Boundary
     // Unlock Flash
@@ -344,7 +392,7 @@ static int32_t EraseChip(void)
     return (0);
     #endif
 }
-
+#include "stdio.h"
 /*
  *  Erase Sector in Flash Memory
  *    Parameter:      adr:  Sector Address
@@ -392,11 +440,8 @@ static int32_t EraseSector(uint32_t adr)
 
     #elif defined(STM32G431xx)
     u32 b, p;
-    u32 flashPageNum;
-    flashPageNum = get_flash_sector(adr);//(((adr & (0x20000 - 1U)) ) >> 11);//
-    b = 0;                              /* Get Bank Number 0..1  */
-    p = flashPageNum;                              /* Get Page Number 0..127 */
-
+    b = GetFlashBankNum(adr);                              /* Get Bank Number 0..1  */
+    p = get_flash_sector(adr);                              /* Get Page Number 0..127 */
     FLASH->SR  = FLASH_PGERR;                              /* Reset Error Flags */
 
     FLASH->CR  = (FLASH_CR_PER |                           /* Page Erase Enabled */

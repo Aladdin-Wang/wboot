@@ -184,10 +184,10 @@ static struct FlashDevice const FlashDevice  =  {
 };
 #endif
 #ifdef STM32G431xx
-#include "stm32f4xx.h"
+#include "stm32g4xx.h"
 static struct FlashDevice const FlashDevice  =  {
    FLASH_DRV_VERS,             // Driver Version, do not modify!
-   "STM32F4xx 128KB Flash",// Device Name (256kB/128kB/64kB)
+   "STM32G4xx 128KB Flash",// Device Name (256kB/128kB/64kB)
    ONCHIP,                     // Device Type
    0x08000000,                 // Device Start Address
    0x00020000,                 // Device Size in Bytes (1024kB)
