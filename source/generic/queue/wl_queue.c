@@ -287,6 +287,84 @@ uint16_t dequeue_bytes(byte_queue_t *ptObj, void *pDate, uint16_t hwLength)
 }
 
 /****************************************************************************
+* Function: dequeue_bytes_setup                                                 *
+* Description: linear read setup, get read pointer and max linear size..   *
+* Parameters:                                                             *
+*   - ptObj: Pointer to the byte_queue_t object.                         *
+*   - pchBuffer: Pointer to store the dequeued data.                         *
+*   - hwLength: Number of bytes to dequeue.                               *
+* Returns: Number of bytes actually dequeued.                             *
+****************************************************************************/
+
+uint16_t dequeue_bytes_setup(byte_queue_t *ptObj, uint8_t **pchBuffer, uint16_t hwLength)
+{
+    assert(NULL != ptObj);
+    assert(NULL != pchBuffer);
+
+    /* initialise "this" (i.e. ptThis) to access class members */
+    class_internal(ptObj, ptThis, byte_queue_t);
+
+    safe_atom_code() {
+        
+        if(this.hwHead == this.hwTail &&
+           0 == this.hwLength ){
+            /* queue is empty */
+            hwLength = 0;
+            continue;
+        }
+
+        if(hwLength > this.hwLength){
+            /* less data */
+            hwLength = this.hwLength;
+        }
+
+        do{
+					  *pchBuffer = &this.pchBuffer[this.hwHead];
+            if(hwLength < (this.hwSize - this.hwHead)) {
+                break;
+            }
+            hwLength = this.hwSize - this.hwHead;
+        } while(0);
+    }
+    return hwLength;
+}
+/****************************************************************************
+* Function: dequeue_bytes_down                                                 *
+* Description: linear read done.              *
+* Parameters:                                                             *
+*   - ptObj: Pointer to the byte_queue_t object.                         *
+*   - hwLength: Number of bytes to dequeue.                               *
+* Returns: Number of bytes actually dequeued.                             *
+****************************************************************************/
+
+uint16_t dequeue_bytes_down(byte_queue_t *ptObj, uint16_t hwLength)
+{
+    assert(NULL != ptObj);
+
+    /* initialise "this" (i.e. ptThis) to access class members */
+    class_internal(ptObj, ptThis, byte_queue_t);
+
+    safe_atom_code() {
+
+        if(this.hwHead == this.hwTail &&
+           0 == this.hwLength ){
+            /* queue is empty */
+            hwLength = 0;
+            continue;
+        }
+
+        if(hwLength > this.hwLength){
+            /* less data */
+            hwLength = this.hwLength;
+        }
+        this.hwHead += hwLength;
+        this.hwLength -= hwLength;
+        this.hwPeek = this.hwHead;
+        this.hwPeekLength = this.hwLength;
+    }
+    return hwLength;
+}
+/****************************************************************************
 * Function: is_queue_empty                                                *
 * Description: Checks if the byte queue is empty.                         *
 * Parameters:                                                             *

@@ -54,10 +54,8 @@ void modify_stack_pointer_and_start_app(uint32_t r0_sp, uint32_t r1_pc)
 #endif
 
 extern uint8_t chUserData[];
-static user_data_t *ptUserData = (user_data_t *)chUserData;
 void go_to_boot(uint8_t *pchDate, uint16_t hwLength);
-
-static uint8_t chBootData[3][32];
+static uint8_t chBootData[3][MARK_SIZE];
 typedef struct {
     void (*fnGoToBoot)(uint8_t *pchDate, uint16_t hwLength);
     bool (*target_flash_init)(uint32_t addr);
@@ -92,8 +90,8 @@ void go_to_boot(uint8_t *pchDate, uint16_t hwLength)
     }
 
     target_flash_init(APP_PART_ADDR);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 96 - USER_DATA_SIZE_ALIGND), chUserData, USER_DATA_SIZE_ALIGND);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 32), chBootData[2], 32);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE) - (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - MARK_SIZE), chBootData[2], MARK_SIZE);
     target_flash_uninit(APP_PART_ADDR);
 }
 
@@ -101,9 +99,9 @@ void start_to_boot(void)
 {
     memset(chBootData, 0, sizeof(chBootData));
     target_flash_init(APP_PART_ADDR);
-    target_flash_erase(APP_PART_ADDR + APP_PART_SIZE - 96, 96);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 96 - 2 * (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 64), chBootData[1], 32);
+    target_flash_erase(APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE), 3*MARK_SIZE);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE) - 2 * (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (2*MARK_SIZE)), chBootData[1], MARK_SIZE);
     target_flash_uninit(APP_PART_ADDR);
 }
 
@@ -111,7 +109,7 @@ void end_to_boot(void)
 {
     memset(chBootData, 0X00, sizeof(chBootData));
     target_flash_init(APP_PART_ADDR);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 96), chBootData[0], 32);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 3*MARK_SIZE), chBootData[0], MARK_SIZE);
     target_flash_uninit(APP_PART_ADDR);
 }
 
@@ -119,15 +117,15 @@ __attribute__((constructor))
 static void start_application(void)
 {
     do {
-        target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 96), chBootData[0], 96);
+        target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 3 * MARK_SIZE), chBootData[0], 3 * MARK_SIZE);//¶ÁÈ¡Õû¸öMARK
 
         if ((0 == *(uint32_t *)&chBootData[2])) {		                                               /* */
-            target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 96 - USER_DATA_SIZE_ALIGND), chUserData, USER_DATA_SIZE_ALIGND);
+            target_flash_read((APP_PART_ADDR + APP_PART_SIZE - (3 * MARK_SIZE) - USER_DATA_SIZE_ALIGND), chUserData, USER_DATA_SIZE_ALIGND);
             break;
         }
 
         if ((0 == *(uint32_t *)&chBootData[1]) && (0XFFFFFFFF == *(uint32_t *)&chBootData[0]) ) {		/* */
-            target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 96 - 2 * (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
+            target_flash_read((APP_PART_ADDR + APP_PART_SIZE - (3 * MARK_SIZE) - 2 * (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
             break;
         }
 

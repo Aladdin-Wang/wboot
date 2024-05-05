@@ -60,16 +60,42 @@ if (!(EXPR))                                                                   \
 #endif
 
 #ifndef safe_atom_code
-    #include "cmsis_compiler.h"	
-    #define safe_atom_code()                                            \
-            for(  uint32_t SAFE_NAME(temp) =                             \
-					({uint32_t SAFE_NAME(temp2)=__get_PRIMASK();       \
-						__disable_irq();                                 \
-						 SAFE_NAME(temp2);}),*SAFE_NAME(temp3) = NULL;    \
-					      SAFE_NAME(temp3)++ == NULL;                      \
-					        __set_PRIMASK(SAFE_NAME(temp)))
-						 
-							
+#ifdef __riscv
+#define MSTATUS_MIE (1 << 3U)
+#define MSTATUS_MPIE (1 << 7U)
+static inline uint32_t read_mstatus(void) {
+    uint32_t value;
+    __asm volatile("csrr %0, mstatus" : "=r"(value));
+    return value;
+}
+static inline void write_mstatus(uint32_t value) {
+    __asm volatile("csrw mstatus, %0" ::"r"(value));
+}
+static inline uint32_t __get_mstatus_and_disable_irq(void) {
+    uint32_t mstatus = 0;
+    mstatus = read_mstatus();
+    write_mstatus(mstatus & ~MSTATUS_MIE);
+    return mstatus;
+}
+static inline void __set_mstatus(uint32_t mstatus) {
+    write_mstatus(mstatus);
+}
+#define safe_atom_code()\
+  for(uint32_t SAFE_NAME(temp) = __get_mstatus_and_disable_irq(),\
+     *SAFE_NAME(temp3) = NULL ;\
+       SAFE_NAME(temp3)++ == NULL;\
+       __set_mstatus(SAFE_NAME(temp)))
+
+#else
+#include "cmsis_compiler.h"
+#define safe_atom_code()                                            \
+        for(  uint32_t SAFE_NAME(temp) =                             \
+            ({uint32_t SAFE_NAME(temp2)=__get_PRIMASK();       \
+                __disable_irq();                                 \
+                  SAFE_NAME(temp2);}),*SAFE_NAME(temp3) = NULL;    \
+                    SAFE_NAME(temp3)++ == NULL;                      \
+                     __set_PRIMASK(SAFE_NAME(temp)))
+#endif
 #endif
 
 
@@ -302,6 +328,12 @@ uint16_t get_queue_count(byte_queue_t *ptObj);
 
 extern
 uint16_t get_queue_available_count(byte_queue_t *ptObj);
+
+extern
+uint16_t dequeue_bytes_setup(byte_queue_t *ptObj, uint8_t **pchBuffer, uint16_t hwLength);
+
+extern
+uint16_t dequeue_bytes_down(byte_queue_t *ptObj, uint16_t hwLength);
 
 #undef __BYTE_QUEUE_CLASS_INHERIT__
 #undef __BYTE_QUEUE_CLASS_IMPLEMENT__

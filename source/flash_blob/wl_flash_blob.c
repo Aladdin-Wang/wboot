@@ -47,46 +47,37 @@ static const flash_blob_t *  flash_dev_find(uint32_t addr)
   */
 uint32_t get_flash_sector(uint32_t Address)
 {
-    uint8_t chNum = 0;
     uint32_t wSector = 0;
-    uint32_t wSectorNum = 0;
-    uint32_t wCurrentSectorNum = 0;
     const flash_blob_t *ptFlashDevice = flash_dev_find(Address);
+    uint8_t chPartitionIndex = 0;//分区索引值
+
+    uint32_t wSectorEnd = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex + 1].AddrSector;
+    uint32_t wSectorStart = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex].AddrSector;
+    uint32_t wSectorSize = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex].szSector;
+    uint32_t Adr = Address - ptFlashDevice->ptFlashDev->DevAdr;
 
     for(wSector = 0; wSector < SECTOR_NUM; wSector++) {
-        if(ptFlashDevice->ptFlashDev->sectors[wSector + 1].szSector == 0XFFFFFFFF &&
-           (Address - ptFlashDevice->ptFlashDev->DevAdr) >= ptFlashDevice->ptFlashDev->szDev)
+
+        if((Adr >= wSectorStart && Adr < wSectorStart + wSectorSize)) {
             break;
+        }
 
-        if(((Address - ptFlashDevice->ptFlashDev->DevAdr) < ptFlashDevice->ptFlashDev->sectors[wSector + 1].AddrSector) &&
-           ((Address - ptFlashDevice->ptFlashDev->DevAdr) >= ptFlashDevice->ptFlashDev->sectors[wSector].AddrSector) ) {
-            if(ptFlashDevice->ptFlashDev->sectors[wSector + 1].AddrSector == 0XFFFFFFFF) {
-                wCurrentSectorNum = (ptFlashDevice->ptFlashDev->szDev - ptFlashDevice->ptFlashDev->sectors[wSector].AddrSector) /
-                                    ptFlashDevice->ptFlashDev->sectors[wSector].szSector;
-            } else {
-                wCurrentSectorNum = (ptFlashDevice->ptFlashDev->sectors[wSector + 1].AddrSector - ptFlashDevice->ptFlashDev->sectors[wSector].AddrSector) /
-                                    ptFlashDevice->ptFlashDev->sectors[wSector].szSector;
-            }
+        wSectorStart += wSectorSize;
 
-            for(uint8_t i = 1; i <= wCurrentSectorNum ; i++) {
-                if(((Address - ptFlashDevice->ptFlashDev->DevAdr) < (i + 1) * ptFlashDevice->ptFlashDev->sectors[wSector].szSector) &&
-                   ((Address - ptFlashDevice->ptFlashDev->DevAdr) >= i * ptFlashDevice->ptFlashDev->sectors[wSector].szSector) ) {
-                    wSector = wSectorNum + i;
-                    break;
-                }
-            }
+        if(wSectorStart >= wSectorEnd && wSectorStart < ptFlashDevice->ptFlashDev->szDev) {
+            chPartitionIndex++;
+            wSectorEnd = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex + 1].AddrSector;
+            wSectorStart = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex].AddrSector;
+            wSectorSize = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex].szSector;
+        }
 
+        if (wSectorEnd == 0xFFFFFFFF && wSectorStart >= ptFlashDevice->ptFlashDev->szDev) {
             break;
-        } else {
-            /*Calculate and record the number of sectors*/
-            wCurrentSectorNum = (ptFlashDevice->ptFlashDev->sectors[wSector + 1].AddrSector - ptFlashDevice->ptFlashDev->sectors[wSector].AddrSector) /
-                                ptFlashDevice->ptFlashDev->sectors[wSector].szSector;
-            wSectorNum += wCurrentSectorNum;
         }
 
     }
 
-    return wSector - 1;
+    return wSector;
 }
 /*
  * Function: target_flash_init

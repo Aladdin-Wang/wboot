@@ -1,5 +1,189 @@
 #include "../wl_flash_blob.h"
 #include "STM32_FLASH_DEV.c"
+
+#if defined(STM32F103xE) || defined(STM32F105xC)
+    typedef volatile unsigned char  vu8;
+    typedef volatile unsigned long  vu32;
+    typedef volatile unsigned short vu16;
+
+    #define M8(adr)  (*((vu8  *) (adr)))
+    #define M16(adr) (*((vu16 *) (adr)))
+    #define M32(adr) (*((vu32 *) (adr)))
+    // FLASH BANK size
+    #define BANK1_SIZE      0x00080000      // Bank1 Size = 512kB
+    // Flash Keys
+    #define RDPRT_KEY       0x5AA5
+    // Flash Control Register definitions
+    #define FLASH_PG        0x00000001
+    #define FLASH_PER       0x00000002
+    #define FLASH_MER       0x00000004
+    #define FLASH_OPTPG     0x00000010
+    #define FLASH_OPTER     0x00000020
+    #define FLASH_STRT      0x00000040
+    #define FLASH_LOCK      0x00000080
+    #define FLASH_OPTWRE    0x00000100
+    // Flash Status Register definitions
+    #define FLASH_BSY       0x00000001
+    #define FLASH_PGERR     0x00000004
+    #define FLASH_WRPRTERR  0x00000010
+    #define FLASH_EOP       0x00000020
+    unsigned long base_adr;
+#endif
+#if defined(STM32F303x8)
+    typedef volatile unsigned short   vu16;
+    typedef          unsigned short    u16;
+    typedef volatile unsigned long    vu32;
+    typedef          unsigned long     u32;
+
+    #define M16(adr) (*((vu16 *) (adr)))
+    #define M32(adr) (*((vu32 *) (adr)))
+    // Flash Keys
+    #define RDPRT_KEY       0x55AA
+
+    // Flash Control Register definitions
+    #define FLASH_PG                ((unsigned int)(1ul << 0))
+    #define FLASH_PER               ((unsigned int)(1ul << 1))
+    #define FLASH_MER               ((unsigned int)(1ul << 2))
+    #define FLASH_OPTPG             ((unsigned int)(1ul << 4))
+    #define FLASH_OPTER             ((unsigned int)(1ul << 5))
+    #define FLASH_STRT              ((unsigned int)(1ul << 6))
+    #define FLASH_LOCK              ((unsigned int)(1ul << 7))
+    #define FLASH_OPTWRE            ((unsigned int)(1ul << 9))
+
+    // Flash Status Register definitions
+    #define FLASH_BSY               ((unsigned int)(1ul << 0))
+    #define FLASH_PGERR             ((unsigned int)(1ul << 2))
+    #define FLASH_WRPRTERR          ((unsigned int)(1ul << 4))
+    #define FLASH_EOP               ((unsigned int)(1ul << 5))
+
+    #define FLASH_ERR               (FLASH_PGERR | FLASH_WRPRTERR)
+#endif
+#if defined(STM32G431xx)
+typedef volatile unsigned long    vu32;
+typedef          unsigned long     u32;
+
+#define M32(adr) (*((vu32 *) (adr)))
+#define FLASH_SR_MISSERR        ((u32)(  1U <<  8))
+static void DSB(void)
+{
+    __asm("DSB");
+}
+
+/* Flash Keys */
+#define FLASH_KEY1               0x45670123
+#define FLASH_KEY2               0xCDEF89AB
+#define FLASH_OPTKEY1            0x08192A3B
+#define FLASH_OPTKEY2            0x4C5D6E7F
+
+/* Flash Control Register definitions */
+
+#define FLASH_CR_PNB_MSK        ((u32)(0x7F <<  3))
+#define FLASH_CR_BKER           ((u32)(  1U << 11))
+#define FLASH_CR_MER2           ((u32)(  1U << 15))
+
+/* Flash Status Register definitions */
+
+#define FLASH_PGERR             (FLASH_SR_OPERR   | FLASH_SR_PROGERR | FLASH_SR_WRPERR  | \
+                                 FLASH_SR_PGAERR  | FLASH_SR_SIZERR  | FLASH_SR_PGSERR  | \
+                                 FLASH_SR_MISSERR | FLASH_SR_FASTERR | FLASH_SR_RDERR   | FLASH_SR_OPTVERR )
+
+/* Flash option register definitions */
+#define FLASH_OPTR_RDP_NO       ((u32)(0xAA      ))
+#define FLASH_OPTR_DBANK        ((u32)(  1U << 22))
+
+
+#endif
+#if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
+    defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
+    typedef volatile unsigned char    vu8;
+    typedef          unsigned char     u8;
+    typedef volatile unsigned short   vu16;
+    typedef          unsigned short    u16;
+    typedef volatile unsigned long    vu32;
+    typedef          unsigned long     u32;
+
+    #define M8(adr)  (*((vu8  *) (adr)))
+    #define M16(adr) (*((vu16 *) (adr)))
+    #define M32(adr) (*((vu32 *) (adr)))
+    // Flash Keys
+    #define RDPRT_KEY       0x00A5
+    #define FLASH_KEY1      0x45670123
+    #define FLASH_KEY2      0xCDEF89AB
+    #define FLASH_OPTKEY1   0x08192A3B
+    #define FLASH_OPTKEY2   0x4C5D6E7F
+
+    // Flash Control Register definitions
+    #define FLASH_PG                ((unsigned int)0x00000001)
+    #define FLASH_SER               ((unsigned int)0x00000002)
+    #define FLASH_MER               ((unsigned int)0x00000004)
+    #define FLASH_MER1              ((unsigned int)0x00008000)
+    #define FLASH_SNB_POS           ((unsigned int)0x00000003)
+    #define FLASH_SNB_MSK           ((unsigned int)0x000000F8)
+    #define FLASH_PSIZE_POS         ((unsigned int)0x00000008)
+    #define FLASH_PSIZE_MSK         ((unsigned int)0x00000300)
+    #define FLASH_STRT              ((unsigned int)0x00010000)
+    #define FLASH_LOCK              ((unsigned int)0x80000000)
+
+    // Flash Option Control Register definitions
+    #define FLASH_OPTLOCK           ((unsigned int)0x00000001)
+    #define FLASH_OPTSTRT           ((unsigned int)0x00000002)
+
+
+    #define FLASH_PSIZE_Byte        ((unsigned int)0x00000000)
+    #define FLASH_PSIZE_HalfWord    ((unsigned int)0x00000100)
+    #define FLASH_PSIZE_Word        ((unsigned int)0x00000200)
+    #define FLASH_PSIZE_DoubleWord  ((unsigned int)0x00000300)
+
+
+    // Flash Status Register definitions
+    #define FLASH_EOP               ((unsigned int)0x00000001)
+    #define FLASH_OPERR             ((unsigned int)0x00000002)
+    #define FLASH_WRPERR            ((unsigned int)0x00000010)
+    #define FLASH_PGAERR            ((unsigned int)0x00000020)
+    #define FLASH_PGPERR            ((unsigned int)0x00000040)
+    #define FLASH_PGSERR            ((unsigned int)0x00000080)
+    #define FLASH_BSY               ((unsigned int)0x00010000)
+    #define FLASH_PGERR             (FLASH_PGSERR | FLASH_PGPERR | FLASH_PGAERR | FLASH_WRPERR)
+
+#endif
+#if defined(STM32H743xx)
+typedef volatile unsigned long    vu32;
+typedef          unsigned long     u32;
+
+#define M32(adr) (*((vu32 *) (adr)))
+
+/* Flash Keys */
+#define FLASH_PDKEY1         0x04152637  /* Flash power down key1 */
+#define FLASH_PDKEY2         0xFAFBFCFD  /* Flash power down key2: used with FLASH_PDKEY1 to unlock the RUN_PD bit in FLASH_ACR */
+
+
+/* Flash Control Register definitions */
+#define FLASH_CR_PSIZE_2    (2U <<  4)   /* Flash program/erase by 32 bits */
+#define FLASH_CR_PSIZE_3    (3U <<  4)   /* Flash program/erase by 64 bits */
+#define FLASH_CR_PSIZE_VAL  FLASH_CR_PSIZE_3
+/* Flash Status Register definitions */
+#define FLASH_BSY            FLASH_SR_QW
+#define FLASH_PGERR         (FLASH_SR_WRPERR   | FLASH_SR_PGSERR   | \
+                             FLASH_SR_STRBERR  | FLASH_SR_INCERR   | \
+                             FLASH_SR_OPERR    | FLASH_SR_RDPERR   | \
+                             FLASH_SR_RDSERR   | FLASH_SR_SNECCERR | \
+                             FLASH_SR_DBECCERR | FLASH_SR_CRCRDERR  )
+
+#define FLASH_START             (0x08000000U)
+unsigned long GetBankNum(unsigned long adr)
+{
+    unsigned long bankNum;
+
+    if (adr >= (FLASH_START + FLASH_BANK_SIZE)) {
+        bankNum = 1U;
+    } else {
+        bankNum = 0U;
+    }
+
+    return (bankNum);
+}
+
+#endif
 /*
  *  Initialize Flash Programming Functions
  *    Parameter:      adr:  Device Base Address
@@ -10,7 +194,43 @@
 
 static int32_t Init(uint32_t adr, uint32_t clk, uint32_t fnc)
 {
-    HAL_FLASH_Unlock();
+    #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
+    defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
+    FLASH->KEYR = FLASH_KEY1;                             // Unlock Flash
+    FLASH->KEYR = FLASH_KEY2;
+
+    FLASH->ACR &= 0x0000000F;                             // keep Wait States, no Cache, no Prefetch
+    FLASH->SR  |= FLASH_PGERR;                            // Reset Error Flags
+
+    #elif defined(STM32G431xx)
+    FLASH->KEYR = FLASH_KEY1;                              /* Unlock Flash operation */
+    FLASH->KEYR = FLASH_KEY2;
+
+    /* Wait until the flash is ready */
+    while (FLASH->SR & FLASH_SR_BSY);
+
+    #elif defined (STM32F103xE) || defined(STM32F105xC)
+    base_adr = adr & ~(BANK1_SIZE - 1);          // Align to Size Boundary
+    // Unlock Flash
+    FLASH->KEYR  = FLASH_KEY1;
+    FLASH->KEYR  = FLASH_KEY2;
+
+    #ifdef STM32F10x_1024
+    FLASH->KEYR2 = FLASH_KEY1;                    // Flash bank 2
+    FLASH->KEYR2 = FLASH_KEY2;
+    #endif
+    #elif defined(STM32F303x8)
+    FLASH->KEYR  = FLASH_KEY1;
+    FLASH->KEYR  = FLASH_KEY2;
+    #elif defined(STM32H743xx)
+    FLASH->KEYR1 = FLASH_KEY1;                     /* Unlcock FLASH A Registers access */
+    FLASH->KEYR1 = FLASH_KEY2;
+    FLASH->CCR1  = FLASH_PGERR;                    /* Clear status register  */
+
+    FLASH->KEYR2 = FLASH_KEY1;                     /* Unlcock FLASH B Registers access */
+    FLASH->KEYR2 = FLASH_KEY2;
+    FLASH->CCR2  = FLASH_PGERR;                    /* Clear status register  */
+    #endif
     return (0);
 }
 
@@ -22,7 +242,23 @@ static int32_t Init(uint32_t adr, uint32_t clk, uint32_t fnc)
 
 static int32_t UnInit(uint32_t fnc)
 {
-    HAL_FLASH_Lock();
+    #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
+    defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
+    FLASH->CR |=  FLASH_LOCK;                             // Lock Flash
+    #elif defined(STM32G431xx)
+    FLASH->CR |= FLASH_CR_LOCK;                            /* Lock Flash operation */
+    DSB();
+    #elif defined (STM32F103xE) || defined(STM32F105xC)
+    FLASH->CR  |=  FLASH_LOCK;
+    #ifdef STM32F10x_1024
+    FLASH->CR2 |=  FLASH_LOCK;                    // Flash bank 2
+    #endif
+    #elif defined(STM32F303x8)
+    FLASH->CR |=  FLASH_LOCK;                             // Lock Flash
+    #elif defined (STM32H743xx)
+    FLASH->CR1 |=  FLASH_CR_LOCK;                  /* Lock FLASH A Registers access */
+    FLASH->CR2 |=  FLASH_CR_LOCK;                  /* Lock FLASH B Registers access */
+    #endif
     return (0);
 }
 
@@ -33,25 +269,80 @@ static int32_t UnInit(uint32_t fnc)
 
 static int32_t EraseChip(void)
 {
-    int32_t result = 0;
-    uint32_t PAGEError = 0;
-    FLASH_EraseInitTypeDef EraseInitStruct;
-    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_MASSERASE;
-    #if defined(FLASH_BANK2_END)
-    EraseInitStruct.Banks       = FLASH_BANK_2;
-
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-        result = 1;
-    }
-
+    #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
+    defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
+    FLASH->CR |=  FLASH_MER;                              // Mass Erase Enabled (sectors  0..11)
+    #ifdef STM32F4xx_2048
+    FLASH->CR |=  FLASH_MER1;                             // Mass Erase Enabled (sectors 12..23)
     #endif
-    EraseInitStruct.Banks       = FLASH_BANK_1;
 
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-        result = 1;
+    FLASH->CR |=  FLASH_STRT;                             // Start Erase
+
+    while (FLASH->SR & FLASH_BSY) {
+        IWDG->KR = 0xAAAA;                                  // Reload IWDG
     }
 
-    return result;
+    FLASH->CR &= ~FLASH_MER;                              // Mass Erase Disabled
+    #ifdef STM32F4xx_2048
+    FLASH->CR &= ~FLASH_MER1;                             // Mass Erase Disabled
+    #endif
+
+    return (0);                                           // Done
+    #elif defined(STM32G431xx)
+    FLASH->SR  = FLASH_PGERR;                              /* Reset Error Flags */
+
+    FLASH->CR  = (FLASH_CR_MER1 | FLASH_CR_MER2);          /* Bank A/B mass erase enabled */
+    FLASH->CR |=  FLASH_CR_STRT;                           /* Start erase */
+    DSB();
+
+    while (FLASH->SR & FLASH_SR_BSY);
+
+    return (0);
+    #elif defined (STM32F103xE) || defined(STM32F105xC)
+    FLASH->CR  |=  FLASH_MER;                     // Mass Erase Enabled
+    FLASH->CR  |=  FLASH_STRT;                    // Start Erase
+
+    while (FLASH->SR  & FLASH_BSY);
+
+    FLASH->CR  &= ~FLASH_MER;                     // Mass Erase Disabled
+
+    #ifdef STM32F10x_1024                           // Flash bank 2
+    FLASH->CR2 |=  FLASH_MER;
+    FLASH->CR2 |=  FLASH_STRT;
+
+    while (FLASH->SR2 & FLASH_BSY);
+
+    FLASH->CR2 &= ~FLASH_MER;
+    #endif
+    return (0);                                   // Done
+    #elif defined(STM32F303x8)
+    FLASH->CR |=  FLASH_MER;                              // Mass Erase Enabled
+    FLASH->CR |=  FLASH_STRT;                             // Start Erase
+
+    while (FLASH->SR & FLASH_BSY);
+
+    FLASH->CR &= ~FLASH_MER;                              // Mass Erase Disabled
+    return (0);                                           // Done
+
+    #elif defined(STM32H743xx)
+    FLASH->CCR1 = FLASH_PGERR;                     /* Clear status register  */
+    FLASH->CR1  = FLASH_CR_BER | FLASH_CR_PSIZE_VAL;
+    FLASH->CR1 |= FLASH_CR_START;
+
+    while (FLASH->SR1 & FLASH_BSY) __NOP();
+
+    FLASH->CR1  =  0;                              /* Reset command register */
+
+
+    FLASH->CCR2 = FLASH_PGERR;                     /* Clear status register  */
+    FLASH->CR2  = FLASH_CR_BER | FLASH_CR_PSIZE_VAL;
+    FLASH->CR2 |= FLASH_CR_START;
+
+    while (FLASH->SR2 & FLASH_BSY) __NOP();
+
+    FLASH->CR2  =  0;                              /* Reset command register */
+    return (0);
+    #endif
 }
 
 /*
@@ -65,63 +356,120 @@ static int32_t EraseSector(uint32_t adr)
     uint32_t PAGEError = 0;
 
     /*Variable used for Erase procedure*/
-    FLASH_EraseInitTypeDef EraseInitStruct;
-    #if defined(FLASH_BANK2_END)
-    /* Fill EraseInit structure*/
-    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.PageAddress = adr;
-    EraseInitStruct.NbPages     = 1;
 
-    if(adr > FLASH_BANK1_END) {
-        EraseInitStruct.Banks       = FLASH_BANK_2;
-    } else {
-        EraseInitStruct.Banks       = FLASH_BANK_1;
-    }
+    #if  defined(STM32F105xC) || defined(STM32F103xE)
+    #ifdef STM32F10x_1024
 
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-        result = 1;
-    }
-
-    #else
-    #if defined(STM32F303x8) || defined(STM32F105xC) || defined(STM32F103xE)
-    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.PageAddress = adr;
-    EraseInitStruct.NbPages     = 1;
-
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-        result = 1;
-    }
-
+    if (adr < (base_adr + BANK1_SIZE)) {          // Flash bank 2
     #endif
-    #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
+        FLASH->CR  |=  FLASH_PER;                   // Page Erase Enabled
+        FLASH->AR   =  adr;                         // Page Address
+        FLASH->CR  |=  FLASH_STRT;                  // Start Erase
+
+        while (FLASH->SR  & FLASH_BSY);
+
+        FLASH->CR  &= ~FLASH_PER;                   // Page Erase Disabled
+        #ifdef STM32F10x_1024
+    } else {                                      // Flash bank 2
+        FLASH->CR2 |=  FLASH_PER;
+        FLASH->AR2  =  adr;
+        FLASH->CR2 |=  FLASH_STRT;
+
+        FLASH->CR2 &= ~FLASH_PER;
+    }
+
+        #endif
+    return (0);
+    #elif defined(STM32F303x8)
+    FLASH->CR  |=  FLASH_PER;                           // Page Erase Enabled
+    FLASH->AR   =  adr;                                 // Page Address
+    FLASH->CR  |=  FLASH_STRT;                          // Start Erase
+
+    while (FLASH->SR  & FLASH_BSY);
+
+    FLASH->CR  &= ~FLASH_PER;                           // Page Erase Disabled
+    return (0);
+
+    #elif defined(STM32G431xx)
+    u32 b, p;
+    u32 flashPageNum;
+    flashPageNum = get_flash_sector(adr);//(((adr & (0x20000 - 1U)) ) >> 11);//
+    b = 0;                              /* Get Bank Number 0..1  */
+    p = flashPageNum;                              /* Get Page Number 0..127 */
+
+    FLASH->SR  = FLASH_PGERR;                              /* Reset Error Flags */
+
+    FLASH->CR  = (FLASH_CR_PER |                           /* Page Erase Enabled */
+                  (p <<  3)    |                           /* page Number. 0 to 127 for each bank */
+                  (b << 11)     );
+    FLASH->CR |=  FLASH_CR_STRT;                           /* Start Erase */
+    DSB();
+
+    while (FLASH->SR & FLASH_SR_BSY);
+
+    if (FLASH->SR & FLASH_PGERR) {                         /* Check for Error */
+        FLASH->SR  = FLASH_PGERR;                            /* Reset Error Flags */
+        return (1);                                          /* Failed */
+    }
+
+    return (0);                                            /* Done */
+    #elif defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
     defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
 
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
-    /* Get the 1st sector to erase */
-    EraseInitStruct.Sector = get_flash_sector(adr);
-    EraseInitStruct.TypeErase     = FLASH_TYPEERASE_SECTORS;
-    EraseInitStruct.VoltageRange  = FLASH_VOLTAGE_RANGE_3;
-    EraseInitStruct.NbSectors     = 1;
+    unsigned long n;
 
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-        result = 1;
+    n = get_flash_sector(adr);//GetSecNum(adr);//                                   // Get Sector Number
+    FLASH->SR |= FLASH_PGERR;                             // Reset Error Flags
+
+    FLASH->CR  =  FLASH_SER;                              // Sector Erase Enabled
+    FLASH->CR |=  ((n << FLASH_SNB_POS) & FLASH_SNB_MSK); // Sector Number
+    FLASH->CR |=  FLASH_STRT;                             // Start Erase
+
+    FLASH->CR &= ~FLASH_SER;                              // Page Erase Disabled
+
+    if (FLASH->SR & FLASH_PGERR) {                        // Check for Error
+        FLASH->SR |= FLASH_PGERR;                           // Reset Error Flags
+        return (1);                                         // Failed
     }
 
-    #endif
-    #if defined(STM32H743xx)
-    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_SECTORS;
-    EraseInitStruct.Sector = (adr - FLASH_BANK1_BASE) / FLASH_SECTOR_SIZE;;
-    EraseInitStruct.NbSectors   = 1;
-    EraseInitStruct.Banks       = FLASH_BANK_1;
-    EraseInitStruct.VoltageRange  = FLASH_VOLTAGE_RANGE_3;
+    return (0);                                           // Done
 
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-        result = 1;
+    #elif defined(STM32H743xx)
+    unsigned long b, s;
+
+    b = GetBankNum(adr);                           /* get Flash Bank number */
+    s = get_flash_sector(adr);                            /* get Flash sector number */
+
+    if (b == 0) {
+        FLASH->CCR1 = FLASH_PGERR;                   /* Clear status register  */
+        FLASH->CR1  = ((s << 8) | FLASH_CR_PSIZE_VAL | FLASH_CR_SER);
+        FLASH->CR1 |= FLASH_CR_START;
+        __ISB();
+        __DSB();
+
+        while (FLASH->SR1 & FLASH_BSY) __NOP();
+
+        FLASH->CR1 = 0;                               /* Reset command register */
+
+        if (FLASH->SR1 & FLASH_PGERR)
+            return (1);
+    } else {
+        FLASH->CCR2 = FLASH_PGERR;                    /* Clear status register  */
+        FLASH->CR2  = ((s << 8) | FLASH_CR_PSIZE_VAL | FLASH_CR_SER);
+        FLASH->CR2 |= FLASH_CR_START;
+        __ISB();
+        __DSB();
+
+        while (FLASH->SR2 & FLASH_BSY) __NOP();
+
+        FLASH->CR2 = 0;                              /* Reset command register */
+
+        if (FLASH->SR2 & FLASH_PGERR)
+            return (1);
     }
 
+    return (0);
     #endif
-    #endif
-    return result;
 }
 
 /*
@@ -138,108 +486,179 @@ static int32_t ProgramPage(uint32_t addr, uint32_t sz, uint8_t* buf)
     #if defined(STM32F303x8) || defined(STM32F105xC) || defined(STM32F103xE)
     uint32_t end_addr   = addr + sz;
 
-    while (addr < end_addr) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, *((uint32_t *)buf)) == HAL_OK) {
-            if (*(uint32_t *)addr != *(uint32_t *)buf) {
-                result = 1;
-                break;
+    sz = (sz + 1) & ~1;                           // Adjust size for Half Words
+
+    #ifdef STM32F10x_1024
+
+    if (adr < (base_adr + BANK1_SIZE)) {          // Flash bank 2
+    #endif
+        while (sz) {
+
+            FLASH->CR  |=  FLASH_PG;                  // Programming Enabled
+
+            M16(addr) = *((unsigned short *)buf);      // Program Half Word
+
+            while (FLASH->SR  & FLASH_BSY);
+
+            FLASH->CR  &= ~FLASH_PG;                  // Programming Disabled
+
+            // Check for Errors
+            if (FLASH->SR  & (FLASH_PGERR | FLASH_WRPRTERR)) {
+                FLASH->SR  |= FLASH_PGERR | FLASH_WRPRTERR;
+                return (1);                             // Failed
             }
 
-            addr += 4;
-            buf  += 4;
-        } else {
-            result = 1;
-            break;
+            // Go to next Half Word
+            addr += 2;
+            buf += 2;
+            sz  -= 2;
+        }
+
+        #ifdef STM32F10x_1024
+    } else {                                      // Flash bank 2
+        while (sz) {
+
+            FLASH->CR2 |=  FLASH_PG;
+
+            M16(adr) = *((unsigned short *)buf);
+
+            while (FLASH->SR2 & FLASH_BSY);
+
+            FLASH->CR2 &= ~FLASH_PG;
+
+            // Check for Errors
+            if (FLASH->SR2 & (FLASH_PGERR | FLASH_WRPRTERR)) {
+                FLASH->SR2 |= FLASH_PGERR | FLASH_WRPRTERR;
+                return (1);
+            }
+
+            // Go to next Half Word
+            adr += 2;
+            buf += 2;
+            sz  -= 2;
         }
     }
+
+        #endif
+
+    return (0);                                   // Done
 
     #endif
     #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
     defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F413xx)
-    uint32_t written_size = 0;
-    uint32_t write_size = 0;
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+    sz = (sz + 3) & ~3;                                   // Adjust size for Words
 
-    while (written_size < sz) {
-        if (((addr + written_size) % 4 == 0) && (sz - written_size >= 4)) {
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr + written_size, *((uint32_t *)(buf + written_size))) == HAL_OK) {
-                if (*(uint32_t *)(addr + written_size) != *(uint32_t *)(buf + written_size)) {
-                    result = 1;
-                    break;
-                }
-            } else {
-                result = 1;
-                break;
-            }
+    FLASH->SR |= FLASH_PGERR;                             // Reset Error Flags
+    FLASH->CR  =  0;                                      // Reset CR
 
-            write_size = 4;
-        } else if (((addr + written_size) % 2 == 0) && (sz - written_size >= 2)) {
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, addr + written_size, *((uint16_t *)(buf + written_size))) == HAL_OK) {
-                if (*(uint16_t *)(addr + written_size) != *(uint16_t *)(buf + written_size)) {
-                    result = 1;
-                    break;
-                }
-            } else {
-                result = 1;
-                break;
-            }
+    while (sz) {
+        FLASH->CR |= (FLASH_PG              |               // Programming Enabled
+                      FLASH_PSIZE_Word);                    // Programming Enabled (Word)
 
-            write_size = 2;
-        } else {
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, addr + written_size, *((uint8_t *)(buf + written_size))) == HAL_OK) {
-                if (*(uint8_t *)(addr + written_size) != *(uint8_t *)(buf + written_size)) {
-                    result = 1;
-                    break;
-                }
-            } else {
-                result = 1;
-                break;
-            }
+        M32(addr) = *((u32 *)buf);                           // Program Double Word
 
-            write_size = 1;
+        while (FLASH->SR & FLASH_BSY);
+
+        FLASH->CR &= ~FLASH_PG;                             // Programming Disabled
+
+        if (FLASH->SR & FLASH_PGERR) {                      // Check for Error
+            FLASH->SR |= FLASH_PGERR;                         // Reset Error Flags
+            return (1);                                       // Failed
         }
 
-        written_size += write_size;
+        addr += 4;                                           // Go to next Word
+        buf += 4;
+        sz  -= 4;
     }
 
+    return (0);                                           // Done
+
+    #endif
+    #if defined(STM32G431xx)//FLASH_TYPEPROGRAM_DOUBLEWORD
+    sz = (sz + 7) & ~7;                                    /* Adjust size for two words */
+
+    FLASH->SR  = FLASH_PGERR;                              /* Reset Error Flags */
+
+    FLASH->CR = FLASH_CR_PG;                               /* Programming Enabled */
+
+    while (sz) {
+        M32(addr    ) = *((u32 *)(buf + 0));                  /* Program the first word of the Double Word */
+        M32(addr + 4) = *((u32 *)(buf + 4));                  /* Program the second word of the Double Word */
+        DSB();
+
+        while (FLASH->SR & FLASH_SR_BSY);
+
+        if (FLASH->SR & FLASH_PGERR) {                       /* Check for Error */
+            FLASH->SR  = FLASH_PGERR;                          /* Reset Error Flags */
+            return (1);                                        /* Failed */
+        }
+
+        addr += 8;                                            /* Go to next DoubleWord */
+        buf += 8;
+        sz  -= 8;
+    }
+
+    FLASH->CR &= ~(FLASH_CR_PG) ;                          /* Reset CR */
+
+    return (0);
     #endif
     #if defined(STM32H743xx)
-    uint32_t write_granularity = FLASH_NB_32BITWORD_IN_FLASHWORD * 4;
-    uint32_t write_size = write_granularity;
-    uint32_t end_addr   = addr + sz - 1, write_addr;
-    uint8_t write_buffer[32] = {0};
-    write_addr = (uint32_t)buf;
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR);
+    unsigned long b;
+    unsigned long *dest_addr = ( u32 *)addr;
+    unsigned long *src_addr  = ( u32 *)buf;
+    unsigned long row_index  = 8;
 
-    while (addr < end_addr) {
-        if(end_addr - addr + 1 < write_granularity) {
-            write_size = end_addr - addr + 1;
+    b = GetBankNum(addr);                           /* get Flash Bank number */
+    sz = (sz + 31) & ~31;                          /* Adjust size for 8 words (256 Bit) */
 
-            for(size_t i = 0; i < write_size; i++) {
-                write_buffer[i] = *((uint8_t *)(write_addr + i));
-            }
-
-            write_addr = (uint32_t)((uint32_t *)write_buffer);
-        }
-
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, write_addr) == HAL_OK) {
-            for(uint8_t i = 0; i < write_size; i++) {
-                if (*(uint8_t *)(addr + i) != *(uint8_t *)(write_addr + i)) {
-                    result = 1;
-                    break;
-                }
-            }
-
-            addr += write_granularity;
-            write_addr  += write_granularity;
+    while (sz) {
+        if (b == 0) {
+            FLASH->CCR1 = FLASH_PGERR;                 /* Clear status register  */
+            FLASH->CR1  = FLASH_CR_PSIZE_VAL | FLASH_CR_PG;
         } else {
-            result = 1;
-            break;
+            FLASH->CCR2 = FLASH_PGERR;                 /* Clear status register  */
+            FLASH->CR2  = FLASH_CR_PSIZE_VAL | FLASH_CR_PG;
         }
+
+        __ISB();
+        __DSB();
+
+        /* Program the 256 bits flash word */
+        row_index  = 8;
+
+        do {
+            *dest_addr = *src_addr;
+            dest_addr++;
+            src_addr++;
+            row_index--;
+        } while (row_index != 0U);
+
+        __ISB();
+        __DSB();
+
+        if (b == 0) {
+            while (FLASH->SR1 & FLASH_BSY) __NOP();
+
+            FLASH->CR1 = 0;                            /* Reset command register */
+
+            if (FLASH->SR1 & FLASH_PGERR)
+                return (1);
+        } else {
+            while (FLASH->SR2 & FLASH_BSY) __NOP();
+
+            FLASH->CR2 = 0;                            /* Reset command register */
+
+            if (FLASH->SR2 & FLASH_PGERR)
+                return (1);
+        }
+
+        sz  -= 32;
     }
 
+    return (0);
+
     #endif
-    return result;
+
 }
 
 const  flash_blob_t  onchip_flash_device = {

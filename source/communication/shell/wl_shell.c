@@ -24,9 +24,6 @@
 #undef this
 #define this        (*ptThis)
 
-extern const int FMshTab$$Base;
-extern const int FMshTab$$Limit;
-
 static void shell_push_history(wl_shell_t *ptObj);
 
 /**
@@ -248,7 +245,32 @@ wl_shell_t *wl_shell_init(wl_shell_t *ptObj)
 
     this.bEchoMode = SHELL_OPTION_ECHO;
     queue_init(&this.tByteInQueue, this.chQueueBuf, sizeof(this.chQueueBuf), true);
+#ifdef __ARMCC_VERSION
+    extern const int FMshTab$$Base;
+    extern const int FMshTab$$Limit;
     init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)&FMshTab$$Base, (msg_t *)&FMshTab$$Limit, &this.tByteInQueue, true));
+#elif defined (__GNUC__) || defined(__TI_COMPILER_VERSION__) || defined(__TASKING__)
+    /* GNU GCC Compiler and TI CCS */
+    extern const int __fsymtab_start;
+    extern const int __fsymtab_end;
+    init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)&__fsymtab_start, (msg_t *)&__fsymtab_end, &this.tByteInQueue, true));
+#elif defined(__ADSPBLACKFIN__) /* for VisualDSP++ Compiler */
+    init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)&__fsymtab_start, (msg_t *)&__fsymtab_end, &this.tByteInQueue, true));
+#elif defined(_MSC_VER)
+    unsigned int *ptr_begin, *ptr_end;
+    ptr_begin = (unsigned int *)&__fsym_begin;
+    ptr_begin += (sizeof(struct finsh_syscall) / sizeof(unsigned int));
+
+    while (*ptr_begin == 0) ptr_begin ++;
+
+    ptr_end = (unsigned int *) &__fsym_end;
+    ptr_end --;
+
+    while (*ptr_end == 0) ptr_end --;
+
+    init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)ptr_begin, (msg_t *)ptr_end, &this.tByteInQueue, true));
+#endif
+
     wl_subscribe_publish_init(&ptObj->tShellSubPub);
     subscribe(&ptObj->tShellSubPub, __MSG_TOPIC(shell_topic), &this, SLOT(wl_shell_exec));
     subscribe(&ptObj->tShellSubPub, __MSG_TOPIC(echo_topic), &this, SLOT(wl_shell_echo));
@@ -321,6 +343,9 @@ static void shell_push_history(wl_shell_t *ptObj)
 
 static int msh_help(int argc, char **argv)
 {
+#ifdef __ARMCC_VERSION
+    extern const int FMshTab$$Base;
+    extern const int FMshTab$$Limit;
     printf("\r\nshell commands:\r\n");
     {
         msg_t *ptMsgTableBase = (msg_t *)&FMshTab$$Base;
@@ -329,7 +354,22 @@ static int msh_help(int argc, char **argv)
         for (uint32_t i = 0; &ptMsgTableBase[i] != ptMsgTableLimit; i++) {
             printf("%-16s - %s\r\n", ptMsgTableBase[i].pchMessage, ptMsgTableBase[i].pchDesc);
         }
+    }	
+#elif defined (__GNUC__) || defined(__TI_COMPILER_VERSION__) || defined(__TASKING__)
+    /* GNU GCC Compiler and TI CCS */
+    extern const int __fsymtab_start;
+    extern const int __fsymtab_end;
+		printf("\r\nshell commands:\r\n");
+    {
+        msg_t *ptMsgTableBase = (msg_t *)&__fsymtab_start;
+        msg_t *ptMsgTableLimit = (msg_t *)&__fsymtab_end;
+
+        for (uint32_t i = 0; &ptMsgTableBase[i] != ptMsgTableLimit; i++) {
+            printf("%-16s - %s\r\n", ptMsgTableBase[i].pchMessage, ptMsgTableBase[i].pchDesc);
+        }
     }
+#endif	
+
     return 0;
 }
 MSH_FUNCTION_EXPORT_CMD(msh_help, help, shell help);

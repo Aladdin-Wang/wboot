@@ -338,7 +338,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
 
         case READ_DATA: {
             /* Read the actual data contained within the Ymodem packet. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, __get_buffer_addr(ptObj), __get_size(ptObj), DLY_3S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, __get_buffer_addr(ptObj), __get_size(ptObj), DLY_10S);
 
             if(PACKET_CPL == tFsm) {
                 set_event(&ptObj->tEvent);

@@ -113,13 +113,7 @@
 //  <i>Default: 0X60000
 //  <i>Must align with flash sector size
 #define APP_PART_SIZE             0xC8000
-// <o>The user data size
-//  <i>Default: 96
-//  <i>Must be aligned to 32 bytes
-#define USER_DATA_SIZE            96
 // </e>
-#define USER_DATA_SIZE_ALIGND     (((USER_DATA_SIZE) + (32) - 1) & ~((32) - 1))
-
 
 // <<< end of configuration section >>>
 #endif

@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define MARK_SIZE                 64
+#define USER_DATA_SIZE            192
+#define USER_DATA_SIZE_ALIGND     (((USER_DATA_SIZE) + (64) - 1) & ~((64) - 1))
+
 typedef struct {
     char chProjectName[16];
     char chHardWareVersion[16];
@@ -23,9 +27,5 @@ typedef struct {
 } user_data_t;
 
 #endif
-
-
-
-
 
 
