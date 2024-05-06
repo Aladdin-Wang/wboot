@@ -42,7 +42,7 @@ if (!(EXPR))                                                                   \
     #define __PLOOC_CLASS_INHERIT__
 #endif
 
-#include "plooc_class.h"
+#include "..\..\plooc\plooc_class.h"
 
 #undef __CONNECT2
 #undef CONNECT2
