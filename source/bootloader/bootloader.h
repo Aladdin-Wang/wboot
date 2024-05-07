@@ -6,6 +6,10 @@
 #include <stdbool.h>
 
 #define MARK_SIZE                 64
+
+// <o>The user data size
+//  <i>Default: 192
+//  <i>Must be aligned to 64 bytes
 #define USER_DATA_SIZE            192
 #define USER_DATA_SIZE_ALIGND     (((USER_DATA_SIZE) + (64) - 1) & ~((64) - 1))
 

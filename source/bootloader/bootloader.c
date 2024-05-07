@@ -98,19 +98,15 @@ void go_to_boot(uint8_t *pchDate, uint16_t hwLength)
 void start_to_boot(void)
 {
     memset(chBootData, 0, sizeof(chBootData));
-    target_flash_init(APP_PART_ADDR);
     target_flash_erase(APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE), 3*MARK_SIZE);
     target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE) - 2 * (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
     target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (2*MARK_SIZE)), chBootData[1], MARK_SIZE);
-    target_flash_uninit(APP_PART_ADDR);
 }
 
 void end_to_boot(void)
 {
     memset(chBootData, 0X00, sizeof(chBootData));
-    target_flash_init(APP_PART_ADDR);
     target_flash_write((APP_PART_ADDR + APP_PART_SIZE - 3*MARK_SIZE), chBootData[0], MARK_SIZE);
-    target_flash_uninit(APP_PART_ADDR);
 }
 
 __attribute__((constructor))
@@ -137,6 +133,7 @@ static void start_application(void)
             break;
         }
 
+				
         modify_stack_pointer_and_start_app(*(volatile uint32_t *)APP_PART_ADDR,
                                            (*(volatile uint32_t *)(APP_PART_ADDR + 4)));
 

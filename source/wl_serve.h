@@ -25,6 +25,10 @@
 #include "./generic/queue/wl_queue.h"
 #endif
 
+#ifdef  WL_USING_CHECK_ENGINE
+#include "./check_agent_engine/wl_check_agent_engine.h"
+#endif
+
 #ifdef WL_USING_SIGNALS_SLOTS
 #include "./communication/signals_slots/wl_signals_slots.h"
 #endif
@@ -37,7 +41,7 @@
 #include "./communication/shell/wl_shell.h"
 #endif
 
-#ifdef WL_USING_FLASH
+#ifdef WL_USING_FLASH_BLOB
 #include "./flash_blob/wl_flash_blob.h"
 #endif
 

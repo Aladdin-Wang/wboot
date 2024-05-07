@@ -4,7 +4,7 @@
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
-// <h>Debug Configuration
+// <h>Log Configuration
 // <c1>enable kernel debug configuration
 //  <i>Default: enable kernel debug configuration
 //#define RT_DEBUG
@@ -17,7 +17,6 @@
 //#define RT_USING_OVERFLOW_CHECK
 // </c>
 // </h>
-
 // <e>Msg Map Configuration
 // <i> Enables msg_map
 #define WL_USING_MSG_MAP         1
@@ -32,6 +31,20 @@
 #define MSG_ARG_MAX             8
 // </e>
 
+// <h>Flash Blob Configuration
+// <c1>Flash Blob Management
+//  <i>Flash Blob Management
+#define WL_USING_FLASH_BLOB
+// </c>
+// </h>
+
+// <h>Check Use Peek
+// <c1>check use peek engine
+//  <i>check use peek engine
+#define WL_USING_CHECK_ENGINE
+// </c>
+// </h>
+
 // <e>Shell Configuration
 // <i> Enables shell
 #define WL_USING_SHELL         1
@@ -44,13 +57,6 @@
 // <o>The maximum number of history lines <0-16>
 //  <i>Default: 8
 #define SHELL_HISTORY_LINES                           5
-// </e>
-// <e>Flash Configuration
-// <i> Enables Flash
-#define WL_USING_FLASH         1
-#if WL_USING_FLASH == 0
-    #undef WL_USING_FLASH
-#endif
 // </e>
 // <h>IPC(Inter-process communication) Configuration
 // <c1>Using Ring Queue
@@ -65,10 +71,6 @@
 //  <i>Using Subscribe-Publish
 #define WL_USING_SUBSCRIBE_PUBLISH
 // </c>
-// <c1>Using Mutex
-//  <i>Using Mutex
-//#define WL_USING_MUTEX
-// </c>
 // <c1>Using Event
 //  <i>Using Event
 //#define WL_USING_EVENT
@@ -78,23 +80,12 @@
 //#define WL_USING_MAILBOX
 // </c>
 // </h>
-
 // <h>Memory Management Configuration
 // <c1>Memory Pool Management
 //  <i>Memory Pool Management
 //#define RT_USING_MEMPOOL
 // </c>
-// <c1>Dynamic Heap Management(Algorithm: small memory )
-//  <i>Dynamic Heap Management
-#define RT_USING_HEAP
-#define RT_USING_SMALL_MEM
-// </c>
-// <c1>using tiny size of memory
-//  <i>using tiny size of memory
-//#define RT_USING_TINY_SIZE
-// </c>
 // </h>
-
 // <e>BootLoader Configuration
 // <i> Enables BootLoader
 #define WL_USING_BOOT         1
@@ -104,12 +95,12 @@
 // <o>The starting address of the app
 //  <i>Default: 0x8020000
 //  <i>Must align with flash sector size
-#define APP_PART_ADDR             0x8010000
+#define APP_PART_ADDR             0x8020000
 // <o>The app size
 //  <i>Default: 0X60000
 //  <i>Must align with flash sector size
-#define APP_PART_SIZE             0x70000
+#define APP_PART_SIZE             0x60000
 // </e>
-// <<< end of configuration section >>>
 
+// <<< end of configuration section >>>
 #endif

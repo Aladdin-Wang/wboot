@@ -49,7 +49,7 @@ uint32_t get_flash_sector(uint32_t Address)
 {
     uint32_t wSector = 0;
     const flash_blob_t *ptFlashDevice = flash_dev_find(Address);
-    uint8_t chPartitionIndex = 0;//分区索引值
+    uint8_t chPartitionIndex = 0;
 
     uint32_t wSectorEnd = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex + 1].AddrSector;
     uint32_t wSectorStart = ptFlashDevice->ptFlashDev->sectors[chPartitionIndex].AddrSector;
