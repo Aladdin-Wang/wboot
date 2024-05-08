@@ -30,29 +30,26 @@ wl_subscribe_publish_t *wl_subscribe_publish_init(wl_subscribe_publish_t *ptObj)
 
     wl_subscribe_publish_t *(ptThis) = ptObj;
 
-    extern const int FMsgTab$$Base;
-    extern const int FMsgTab$$Limit;
-	
     queue_init(&this.tByteInQueue,this.chQueueBuf,sizeof(this.chQueueBuf),true);
 #ifdef __ARMCC_VERSION
-    extern const int FMshTab$$Base;
-    extern const int FMshTab$$Limit;
-    init_fsm(search_msg_map, &this.fsmSearchTopicMap, args((msg_t *)&FMshTab$$Base, (msg_t *)&FMshTab$$Limit, &this.tByteInQueue, false));
+    extern const int VSymTab$$Base;
+    extern const int VSymTab$$Limit;
+    init_fsm(search_msg_map, &this.fsmSearchTopicMap, args((msg_t *)&VSymTab$$Base, (msg_t *)&VSymTab$$Limit, &this.tByteInQueue, false));
 #elif defined (__GNUC__) || defined(__TI_COMPILER_VERSION__) || defined(__TASKING__)
     /* GNU GCC Compiler and TI CCS */
-    extern const int __fsymtab_start;
-    extern const int __fsymtab_end;
-    init_fsm(search_msg_map, &this.fsmSearchTopicMap, args((msg_t *)&__fsymtab_start, (msg_t *)&__fsymtab_end, &this.tByteInQueue, false));
+    extern const int __vsymtab_start;
+    extern const int __vsymtab_end;
+    init_fsm(search_msg_map, &this.fsmSearchTopicMap, args((msg_t *)&__vsymtab_start, (msg_t *)&__vsymtab_end, &this.tByteInQueue, false));
 #elif defined(__ADSPBLACKFIN__) /* for VisualDSP++ Compiler */
-    init_fsm(search_msg_map, &this.fsmSearchTopicMap, args((msg_t *)&__fsymtab_start, (msg_t *)&__fsymtab_end, &this.tByteInQueue, false));
+    init_fsm(search_msg_map, &this.fsmSearchTopicMap, args((msg_t *)&__vsymtab_start, (msg_t *)&__vsymtab_end, &this.tByteInQueue, false));
 #elif defined(_MSC_VER)
     unsigned int *ptr_begin, *ptr_end;
-    ptr_begin = (unsigned int *)&__fsym_begin;
+    ptr_begin = (unsigned int *)&__vsym_begin;
     ptr_begin += (sizeof(struct finsh_syscall) / sizeof(unsigned int));
 
     while (*ptr_begin == 0) ptr_begin ++;
 
-    ptr_end = (unsigned int *) &__fsym_end;
+    ptr_end = (unsigned int *) &__vsym_end;
     ptr_end --;
 
     while (*ptr_end == 0) ptr_end --;
