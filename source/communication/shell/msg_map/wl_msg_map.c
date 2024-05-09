@@ -22,40 +22,40 @@ static bool check_string_get_char(fsm(check_string) *ptObj, uint8_t *pchByte);
 static bool check_arg_get_bytes(fsm(check_arg) *ptObj, uint8_t *pchByte, uint16_t hwLength);
 
 def_simple_fsm( search_msg_map,
-							def_params(
-											fsm(check_string)  fsmCheckStr;
-											fsm(check_arg)     fsmCheckArg;
-											msg_t              *ptMsgTableBase;
-											msg_t              *ptMsgTableLimit;
-											uint8_t            chByte;
-											uint16_t           hwIndex;
-											byte_queue_t       *ptQueue;
-											bool               bArgIsString;
-											bool               bIsRequestDrop;
-											char               *argv[MSG_ARG_MAX];
-											int                argc;
-							)
-					)
+    def_params(
+        fsm(check_string)  fsmCheckStr;
+        fsm(check_arg)     fsmCheckArg;
+        msg_t              *ptMsgTableBase;
+        msg_t              *ptMsgTableLimit;
+        uint8_t            chByte;
+        uint16_t           hwIndex;
+        byte_queue_t       *ptQueue;
+        bool               bArgIsString;
+        bool               bIsRequestDrop;
+        char               *argv[MSG_ARG_MAX];
+        int                argc;
+     )
+)
 
 fsm_initialiser(search_msg_map,
-										args(
-														msg_t *ptMsgTableBase,
-														msg_t *ptMsgTableLimit,
-														byte_queue_t *ptQueue,
-														bool bArgIsString
-										))
+    args(
+        msg_t *ptMsgTableBase,
+        msg_t *ptMsgTableLimit,
+        byte_queue_t *ptQueue,
+        bool bArgIsString
+    ))
 
     init_body (
-        if (NULL == ptQueue || NULL == ptMsgTableBase || NULL == ptMsgTableLimit)
-        {
-           abort_init();
-        }
-        this.ptMsgTableBase = ptMsgTableBase;
-        this.ptMsgTableLimit = ptMsgTableLimit;
-        this.ptQueue = ptQueue;
-        this.bArgIsString = bArgIsString;
-    )
 
+    if (NULL == ptQueue || NULL == ptMsgTableBase || NULL == ptMsgTableLimit)
+    {
+        abort_init();
+    }
+    this.ptMsgTableBase = ptMsgTableBase;
+    this.ptMsgTableLimit = ptMsgTableLimit;
+    this.ptQueue = ptQueue;
+    this.bArgIsString = bArgIsString;
+)
 
 fsm_implementation(search_msg_map)
 {
@@ -77,6 +77,7 @@ fsm_implementation(search_msg_map)
                     fsm_on_going();
                 }
             }
+
             fsm_cpl();
         } else {
             init_fsm(check_string, &(this.fsmCheckStr), args((const char *)(this.ptMsgTableBase[this.hwIndex].pchMessage), check_string_get_char));

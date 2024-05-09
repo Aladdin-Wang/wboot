@@ -113,7 +113,7 @@ __attribute__((constructor))
 static void start_application(void)
 {
     do {
-        target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 3 * MARK_SIZE), chBootData[0], 3 * MARK_SIZE);//¶ÁÈ¡Õû¸öMARK
+        target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 3 * MARK_SIZE), chBootData[0], 3 * MARK_SIZE);/* */
 
         if ((0 == *(uint32_t *)&chBootData[2])) {		                                               /* */
             target_flash_read((APP_PART_ADDR + APP_PART_SIZE - (3 * MARK_SIZE) - USER_DATA_SIZE_ALIGND), chUserData, USER_DATA_SIZE_ALIGND);

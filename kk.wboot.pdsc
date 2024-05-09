@@ -156,11 +156,11 @@
   
 			<file category="sourceC" name="source/generic/queue/wl_queue.c"/>    
 			<file category="sourceC" name="source/check_agent_engine/wl_check_agent_engine.c"/>        
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_arg.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_str.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
-			<file category="sourceC" name="source/communication/signals_slots/wl_signals_slots.c"/>
-			<file category="sourceC" name="source/communication/subscribe_publish/wl_subscribe_publish.c"/>
+			<file category="sourceC" name="source/communication/shell/msg_map/wl_msg_check_arg.c"/>
+			<file category="sourceC" name="source/communication/shell/msg_map/wl_msg_check_str.c"/>
+			<file category="sourceC" name="source/communication/shell/msg_map/wl_msg_map.c"/>
+			<file category="sourceC" name="source/communication/shell/signals_slots/wl_signals_slots.c"/>
+			<file category="sourceC" name="source/communication/shell/subscribe_publish/wl_subscribe_publish.c"/>
 			<file category="sourceC" name="source/communication/shell/wl_shell.c"/>    
 			<file category="sourceC" name="source/communication/ymodem/wl_ymodem.c"/>        
 		</files>

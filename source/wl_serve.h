@@ -30,11 +30,11 @@
 #endif
 
 #ifdef WL_USING_SIGNALS_SLOTS
-#include "./communication/signals_slots/wl_signals_slots.h"
+#include "./communication/shell/signals_slots/wl_signals_slots.h"
 #endif
 
 #ifdef WL_USING_SUBSCRIBE_PUBLISH
-#include "./communication/subscribe_publish/wl_subscribe_publish.h"
+#include "./communication/shell/subscribe_publish/wl_subscribe_publish.h"
 #endif
 
 #ifdef WL_USING_SHELL

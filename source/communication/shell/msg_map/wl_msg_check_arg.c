@@ -24,7 +24,7 @@ def_simple_fsm( check_arg,
             uint16_t hwIndex;
             int16_t hwCount;
             uint8_t chByte;
-			bool bArgIsString;
+            bool bArgIsString;
             bool (*fnGetBytes)(fsm(check_arg) *ptObj,uint8_t *pchByte,uint16_t hwLength);
             uint8_t chArgNums;
             int16_t chArgLen;
@@ -40,7 +40,7 @@ fsm_initialiser( check_arg,
         bool (*fnGetBytes)(fsm(check_arg) *ptObj,uint8_t *pchByte,uint16_t hwLength),
         int32_t *argc,
         char **argv,
-	    bool bArgIsString
+        bool bArgIsString
     ))
 
     init_body (

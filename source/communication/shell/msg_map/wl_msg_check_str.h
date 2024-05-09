@@ -15,43 +15,34 @@
 *                                                                           *
 ****************************************************************************/
 
-#ifndef __SERVE_MSG_CHECK_ARG_H_
-#define __SERVE_MSG_CHECK_ARG_H_
+#ifndef __SERVE_MSG_CHECK_STR_H_
+#define __SERVE_MSG_CHECK_STR_H_
 #include "./app_cfg.h"
 #if defined(WL_USING_MSG_MAP)
-#include "../.././fsm/simple_fsm.h"
+#include "../../.././fsm/simple_fsm.h"
+#include <string.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
-declare_simple_fsm(check_arg);
-extern_fsm_implementation(check_arg);
-extern_fsm_initialiser( check_arg,
+declare_simple_fsm(check_string);
+extern_fsm_implementation(check_string);
+extern_fsm_initialiser( check_string,
         args(
             const char *pchString,
-            bool (*fnGetBytes)(fsm(check_arg) *ptObj,uint8_t *pchByte,uint16_t hwLength),
-            int32_t *argc,
-            char **argv,
-			bool bArgIsString
+            bool (*fnGetChar)(fsm(check_string) *ptObj,uint8_t *pchByte)
         ))
 /*! fsm used to output specified string */
-extern_simple_fsm(check_arg,
+extern_simple_fsm(check_string,
     def_params(
             const char *pchStr;
             uint16_t hwIndex;
-            int16_t hwCount;
-            uint8_t chByte;
-			bool bArgIsString;
-            bool (*fnGetBytes)(fsm(check_arg) *ptObj,uint8_t *pchByte,uint16_t hwLength);
-            uint8_t chArgNums;
-            int16_t chArgLen;
-            char chArgs[MSG_ARG_LEN];
-            int32_t *argc;           
-            char **argv;
+            uint8_t  chByte;
+            bool (*fnGetChar)(fsm(check_string) *ptObj,uint8_t *pchByte);
     )
 )
 
 #ifdef __cplusplus
 }
 #endif
-#endif
+#endif 
 #endif 

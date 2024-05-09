@@ -32,9 +32,9 @@ extern "C" {
     const char __vsym_##cmd##_desc[] __section(".rodata.name") = #desc;   \
     const __used struct _msg_t __vsym_##cmd __section("VSymTab")= \
             {                           \
-                  __vsym_##cmd##_name,    \
-                  (msg_hanlder_t *)&name,     \
-                  __vsym_##cmd##_desc,    \
+                __vsym_##cmd##_name,    \
+                (msg_hanlder_t *)&name, \
+                __vsym_##cmd##_desc,    \
             };
 /**
  * @ingroup msg
@@ -75,7 +75,7 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1])     \
+                    *((__TYPE1*)argv[1])     \
                  ));	    \
         return 0;          \
     }  \
@@ -91,8 +91,8 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1]),     \
-										*((__TYPE2*)argv[2])     \
+                     *((__TYPE1*)argv[1]),     \
+                     *((__TYPE2*)argv[2])     \
                  ));	    \
         return 0;          \
     }  \
@@ -101,17 +101,17 @@ typedef struct wl_subscribe_publish_t {
 #define __SIGNALS_3(__OBJ,__TOPIC,__TYPE1,__TYPE2,__TYPE3)     \
     signals(__TOPIC,wl_subscribe_publish_t *ptThis,    \
             args(                                         \
-                    __TYPE1,                            \
-                    __TYPE2,                              \
-                    __TYPE3                              \
+                     __TYPE1,                            \
+                     __TYPE2,                              \
+                     __TYPE3                              \
                 ));                                    \
     static fsm_rt_t CONNECT2(__TOPIC,_fun)(int argc, char **argv) \
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1]),     \
-										*((__TYPE2*)argv[2]),     \
-										*((__TYPE3*)argv[3])     \
+                     *((__TYPE1*)argv[1]),     \
+                     *((__TYPE2*)argv[2]),     \
+                     *((__TYPE3*)argv[3])     \
                  ));	    \
         return 0;          \
     }  \
@@ -129,10 +129,10 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1]),     \
-										*((__TYPE2*)argv[2]),     \
-										*((__TYPE3*)argv[3]),     \
-										*((__TYPE4*)argv[4])     \
+                     *((__TYPE1*)argv[1]),     \
+                     *((__TYPE2*)argv[2]),     \
+                     *((__TYPE3*)argv[3]),     \
+                     *((__TYPE4*)argv[4])     \
                  ));	    \
         return 0;          \
     }  \
@@ -151,11 +151,11 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1]),     \
-										*((__TYPE2*)argv[2]),     \
-										*((__TYPE3*)argv[3]),     \
-										*((__TYPE4*)argv[4]),     \
-										*((__TYPE5*)argv[5])     \
+                    *((__TYPE1*)argv[1]),     \
+                    *((__TYPE2*)argv[2]),     \
+                    *((__TYPE3*)argv[3]),     \
+                    *((__TYPE4*)argv[4]),     \
+                    *((__TYPE5*)argv[5])     \
                  ));	    \
         return 0;          \
     }  \
@@ -176,12 +176,12 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1]),     \
-										*((__TYPE2*)argv[2]),     \
-										*((__TYPE3*)argv[3]),     \
-										*((__TYPE4*)argv[4]),     \
-										*((__TYPE5*)argv[5]),     \
-										*((__TYPE6*)argv[6])     \
+                    *((__TYPE1*)argv[1]),     \
+                    *((__TYPE2*)argv[2]),     \
+                    *((__TYPE3*)argv[3]),     \
+                    *((__TYPE4*)argv[4]),     \
+                    *((__TYPE5*)argv[5]),     \
+                    *((__TYPE6*)argv[6])     \
                  ));	    \
         return 0;          \
     }  \
@@ -202,13 +202,13 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,                \
              args(                            \
-										*((__TYPE1*)argv[1]),     \
-										*((__TYPE2*)argv[2]),     \
-										*((__TYPE3*)argv[3]),     \
-										*((__TYPE4*)argv[4]),     \
-										*((__TYPE5*)argv[5]),     \
-										*((__TYPE6*)argv[6]),    \
-										*((__TYPE7*)argv[7])     \
+                    *((__TYPE1*)argv[1]),     \
+                    *((__TYPE2*)argv[2]),     \
+                    *((__TYPE3*)argv[3]),     \
+                    *((__TYPE4*)argv[4]),     \
+                    *((__TYPE5*)argv[5]),     \
+                    *((__TYPE6*)argv[6]),    \
+                    *((__TYPE7*)argv[7])     \
                  ));	    \
         return 0;          \
     }  \
@@ -230,14 +230,14 @@ typedef struct wl_subscribe_publish_t {
     {                         \
         emit(__TOPIC,__OBJ,              \
              args(                        \
-										*((__TYPE1*)argv[1]),    \
-										*((__TYPE2*)argv[2]),    \
-										*((__TYPE3*)argv[3]),    \
-										*((__TYPE4*)argv[4]),    \
-										*((__TYPE5*)argv[5]),    \
-										*((__TYPE6*)argv[6]),    \
-										*((__TYPE7*)argv[7]),    \
-										*((__TYPE8*)argv[8])     \
+                    *((__TYPE1*)argv[1]),    \
+                    *((__TYPE2*)argv[2]),    \
+                    *((__TYPE3*)argv[3]),    \
+                    *((__TYPE4*)argv[4]),    \
+                    *((__TYPE5*)argv[5]),    \
+                    *((__TYPE6*)argv[6]),    \
+                    *((__TYPE7*)argv[7]),    \
+                    *((__TYPE8*)argv[8])     \
                  ));	    \
         return 0;          \
     }  \

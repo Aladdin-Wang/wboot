@@ -19,7 +19,7 @@
 #define __SERVE_SHELL_H_
 #include "./app_cfg.h"
 #if defined(WL_USING_SHELL)
-#include "../subscribe_publish/wl_subscribe_publish.h"
+#include "./subscribe_publish/wl_subscribe_publish.h"
 
 /**
  * @ingroup msh
