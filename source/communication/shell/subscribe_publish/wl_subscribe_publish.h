@@ -30,12 +30,11 @@ extern "C" {
 #define MSG_FUNCTION_EXPORT_CMD(name, cmd, desc)                      \
     const char __vsym_##cmd##_name[] __section(".rodata.name") = #cmd;    \
     const char __vsym_##cmd##_desc[] __section(".rodata.name") = #desc;   \
-    const __used struct _msg_t __vsym_##cmd __section("VSymTab")= \
-            {                           \
-                __vsym_##cmd##_name,    \
-                (msg_hanlder_t *)&name, \
-                __vsym_##cmd##_desc,    \
-            };
+    const __used struct _msg_t __vsym_##cmd __section("VSymTab")={ \
+          __vsym_##cmd##_name,    \
+          (msg_hanlder_t *)&name, \
+          __vsym_##cmd##_desc,    \
+    };
 /**
  * @ingroup msg
  *

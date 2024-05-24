@@ -32,12 +32,11 @@
 #define MSH_FUNCTION_EXPORT_CMD(name, cmd, desc)                      \
     const char __fsym_##cmd##_name[] __section(".rodata.name") = #cmd;    \
     const char __fsym_##cmd##_desc[] __section(".rodata.name") = #desc;   \
-    const __used struct _msg_t __fsym_##cmd __section("FSymTab")= \
-            {                           \
-                                        __fsym_##cmd##_name,    \
-                                        (msg_hanlder_t *)&name,     \
-                                        __fsym_##cmd##_desc,    \
-            };
+    const __used struct _msg_t __fsym_##cmd __section("FSymTab")={  \
+          __fsym_##cmd##_name,    \
+          (msg_hanlder_t *)&name, \
+          __fsym_##cmd##_desc,    \
+    };
 
 #define MSH_CMD_EXPORT(command, desc)   \
     MSH_FUNCTION_EXPORT_CMD(command, command, desc)

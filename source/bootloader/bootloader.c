@@ -83,15 +83,13 @@ static const boot_ops_t tBootOps  __attribute__ ((section(".ARM.__at_0x08001000"
 
 void go_to_boot(uint8_t *pchDate, uint16_t hwLength)
 {
-    memset(chBootData, 0, sizeof(chBootData));
-
-    for(int i = 0; i < hwLength && hwLength < USER_DATA_SIZE_ALIGND; i++) {
-        chUserData[i] = pchDate[i];
-    }
-
+	  uint8_t chData[MARK_SIZE];
+	  for(uint8_t i = 0; i < MARK_SIZE; i++){
+        chData[i] = 0;
+		}
     target_flash_init(APP_PART_ADDR);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE) - (USER_DATA_SIZE_ALIGND)), chUserData, USER_DATA_SIZE_ALIGND);
-    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - MARK_SIZE), chBootData[2], MARK_SIZE);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE) - (USER_DATA_SIZE_ALIGND)), pchDate, USER_DATA_SIZE_ALIGND);
+    target_flash_write((APP_PART_ADDR + APP_PART_SIZE - MARK_SIZE), chData, MARK_SIZE);
     target_flash_uninit(APP_PART_ADDR);
 }
 

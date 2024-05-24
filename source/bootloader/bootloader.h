@@ -18,9 +18,11 @@ typedef struct {
     char chHardWareVersion[16];
     char chSoftBootVersion[16];
     char chSoftAppVersion[16];
-    char wBoardId;
+	  char chAppCompileDate[16];
+    char chAppCompileTime[16];
     char chPortName[16];
-    int wPortBaudrate;
+	  int wPortBaudrate;
+	  char wBoardId;
     int wRestartTime;
 } msgSig_t;
 typedef struct {

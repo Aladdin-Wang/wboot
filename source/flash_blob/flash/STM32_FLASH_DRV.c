@@ -72,10 +72,10 @@ static void DSB(void)
 
 /* Flash Keys */
 #if !defined  (USE_HAL_DRIVER)
-#define FLASH_KEY1               0x45670123
-#define FLASH_KEY2               0xCDEF89AB
-#define FLASH_OPTKEY1            0x08192A3B
-#define FLASH_OPTKEY2            0x4C5D6E7F
+    #define FLASH_KEY1               0x45670123
+    #define FLASH_KEY2               0xCDEF89AB
+    #define FLASH_OPTKEY1            0x08192A3B
+    #define FLASH_OPTKEY2            0x4C5D6E7F
 #endif
 /* Flash Control Register definitions */
 
@@ -93,56 +93,56 @@ static void DSB(void)
 #define FLASH_OPTR_RDP_NO       ((u32)(0xAA      ))
 #define FLASH_OPTR_DBANK        ((u32)(  1U << 22))
 
-static u32 GetFlashType (void) {
-  u32 flashType;
+static u32 GetFlashType (void)
+{
+    u32 flashType;
 
-  switch ((DBGMCU->IDCODE & 0xFFFU)) {
-    case 0x468:             /* Flash Category 2 devices, 2k sectors */
-    case 0x479:             /* Flash Category 4 devices, 2k sectors */
-                            /* devices have only a singe bank flash */
-      flashType = 0U;       /* Single-Bank Flash type */
-    break;
+    switch ((DBGMCU->IDCODE & 0xFFFU)) {
+        case 0x468:             /* Flash Category 2 devices, 2k sectors */
+        case 0x479:             /* Flash Category 4 devices, 2k sectors */
+            /* devices have only a singe bank flash */
+            flashType = 0U;       /* Single-Bank Flash type */
+            break;
 
-    case 0x469:             /* Flash Category 3 devices, 2k or 4k sectors */
-    default:                /* devices have a dual bank flash, configurable via FLASH_OPTR.DBANK */
-      flashType = 1U;       /* Dual-Bank Flash type */
-    break;
-  }
-
-  return (flashType);
-}
-static u32 GetFlashBankMode (void) {
-  u32 flashBankMode;
-
-  flashBankMode = (FLASH->OPTR & FLASH_OPTR_DBANK) ? 1U : 0U;
-
-  return (flashBankMode);
-}
-static u32 GetFlashBankNum(u32 adr) {
-  u32 flashBankNum;
-
-  if (GetFlashType() == 1U) {
-    /* Dual-Bank Flash */
-    if (GetFlashBankMode() == 1U) {
-      /* Dual-Bank Flash configured as Dual-Bank */
-      if (adr >= (flashBase + flashBankSize)) {
-        flashBankNum = 1U;
-      }
-      else {
-        flashBankNum = 0U;
-      }
+        case 0x469:             /* Flash Category 3 devices, 2k or 4k sectors */
+        default:                /* devices have a dual bank flash, configurable via FLASH_OPTR.DBANK */
+            flashType = 1U;       /* Dual-Bank Flash type */
+            break;
     }
-    else {
-      /* Dual-Bank Flash configured as Single-Bank */
-      flashBankNum = 0U;
-    }
-  }
-  else {
-    /* Single-Bank Flash */
-    flashBankNum = 0u;
-  }
 
-  return (flashBankNum);
+    return (flashType);
+}
+static u32 GetFlashBankMode (void)
+{
+    u32 flashBankMode;
+
+    flashBankMode = (FLASH->OPTR & FLASH_OPTR_DBANK) ? 1U : 0U;
+
+    return (flashBankMode);
+}
+static u32 GetFlashBankNum(u32 adr)
+{
+    u32 flashBankNum;
+
+    if (GetFlashType() == 1U) {
+        /* Dual-Bank Flash */
+        if (GetFlashBankMode() == 1U) {
+            /* Dual-Bank Flash configured as Dual-Bank */
+            if (adr >= (flashBase + flashBankSize)) {
+                flashBankNum = 1U;
+            } else {
+                flashBankNum = 0U;
+            }
+        } else {
+            /* Dual-Bank Flash configured as Single-Bank */
+            flashBankNum = 0U;
+        }
+    } else {
+        /* Single-Bank Flash */
+        flashBankNum = 0u;
+    }
+
+    return (flashBankNum);
 }
 #endif
 #if defined(STM32F407xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| \
@@ -251,14 +251,16 @@ static int32_t Init(uint32_t adr, uint32_t clk, uint32_t fnc)
     #elif defined(STM32G431xx)
     FLASH->KEYR = FLASH_KEY1;                              /* Unlock Flash operation */
     FLASH->KEYR = FLASH_KEY2;
-	
+
     /* Wait until the flash is ready */
     while (FLASH->SR & FLASH_SR_BSY);
-	flashBase = adr;
+
+    flashBase = adr;
     flashSize = ((*((u32 *)FLASHSIZE_BASE)) & 0x0000FFFF) << 10;
     flashBankSize = flashSize >> 1;
     #elif defined (STM32F103xE) || defined(STM32F105xC)
     base_adr = adr & ~(BANK1_SIZE - 1);          // Align to Size Boundary
+		FLASH->ACR |= FLASH_ACR_LATENCY_2;
     // Unlock Flash
     FLASH->KEYR  = FLASH_KEY1;
     FLASH->KEYR  = FLASH_KEY2;
