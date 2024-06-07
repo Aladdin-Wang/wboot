@@ -20,6 +20,9 @@
     <release version="9.9.9" tag="v9.9.9">
       Active development ...
     </release>
+	    <release date="2024-06-07" version="0.9.3" tag="v0.9.3" >
+      - Other minor updates
+    </release>
   </releases>
 
   <keywords>
@@ -29,46 +32,6 @@
     <keyword>Data Structures</keyword>
   </keywords>
     <conditions> 
-        <condition id="Arm Compiler">
-            <description>Arm Compiler 5 (armcc) or Arm Compiler 6 (armclang).</description>
-            <accept Tcompiler="ARMCC" Toptions="AC6"/>
-            <accept Tcompiler="ARMCC" Toptions="AC6LTO"/>
-            <accept Tcompiler="ARMCC" Toptions="AC5"/>
-        </condition>
-        <condition id="Arm GCC">
-            <description>GNU Tools for Arm Embedded Processors.</description>
-            <accept Tcompiler="GCC"/>
-        </condition>
-
-        
-        <condition id="Armv8-M Processors">
-            <accept  Dcore="ARMV8MBL"/>
-            <accept  Dcore="ARMV8MML"/>
-            <accept  Dcore="ARMV81MML"/>
-            <accept  Dcore="Star-MC1"/>
-            <accept  Dcore="Cortex-M23"/>
-            <accept  Dcore="Cortex-M33"/>
-            <accept  Dcore="Cortex-M35P"/>
-            <accept  Dcore="Cortex-M55"/>
-            <accept  Dcore="Cortex-M85"/>
-        </condition>
-
-        <condition id="Previous Generation Cortex-M Processors">
-            <accept  Dcore="Cortex-M0"/>
-            <accept  Dcore="Cortex-M0+"/>
-            <accept  Dcore="Cortex-M1"/>
-            <accept  Dcore="Cortex-M3"/>
-            <accept  Dcore="Cortex-M4"/>
-            <accept  Dcore="Cortex-M7"/>
-            <accept  Dcore="SC000"/>
-            <accept  Dcore="SC300"/>
-        </condition>
-
-        <condition id="Cortex-M Processors">
-            <description>Support All Cortex-M based processors</description>
-            <accept condition="Previous Generation Cortex-M Processors"/>
-            <accept condition="Armv8-M Processors"/>
-        </condition>
 
         <condition id="CMSIS-CORE">
             <description>Require CMSIS-CORE Support</description>
@@ -85,55 +48,6 @@
 		  <require Cclass="BootServe" Cgroup="wboot" Csub="Core"/>		  
 		</condition>
 		
-        <condition id="Cortex-M Arm GCC">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm GCC"/>
-            <require condition="Cortex-M Processors"/>
-        </condition>
-
-        <condition id="Cortex-M Arm Compiler">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm Compiler"/>
-            <require condition="Cortex-M Processors"/>
-        </condition>
-        
-        <condition id="Previous Generation Cortex-M Arm Compiler">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm Compiler"/>
-            <require condition="Previous Generation Cortex-M Processors"/>
-        </condition>
-        
-        <condition id="Armv8-M Arm Compiler">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm Compiler"/>
-            <require condition="Armv8-M Processors"/>
-        </condition>
-        
-        <condition id="Cortex-M Arm GCC CMSIS-CORE">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm GCC"/>
-            <require condition="Cortex-M Processors"/>
-            <require condition="CMSIS-CORE"/>
-        </condition>
-        <condition id="Cortex-M Arm Compiler CMSIS-CORE">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm Compiler"/>
-            <require condition="Cortex-M Processors"/>
-            <require condition="CMSIS-CORE"/>
-        </condition>
-        
-        <condition id="Previous Generation Cortex-M Arm Compiler CMSIS-CORE">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm Compiler"/>
-            <require condition="Previous Generation Cortex-M Processors"/>
-            <require condition="CMSIS-CORE"/>
-        </condition>
-        <condition id="Armv8-M Arm Compiler CMSIS-CORE">
-            <description>Compile Cortex-M Processors with GNU Tools for Arm Embedded Processors.</description>
-            <require condition="Arm Compiler"/>
-            <require condition="Armv8-M Processors"/>
-            <require condition="CMSIS-CORE"/>
-        </condition>
         
     </conditions>  
   <components>
