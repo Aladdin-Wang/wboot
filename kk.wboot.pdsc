@@ -16,17 +16,15 @@
 
   <repository type="git">https://github.com/Aladdin-Wang/wboot.git</repository>
 
-  <releases>
-    <release version="9.9.9" tag="v9.9.9">
-      Active development ...
-    </release>
-	<release date="2024-06-07" version="0.9.4" tag="v0.9.4" >
+<releases>
+    <release date="2024-06-07" version="0.9.4" tag="v0.9.4" >
       - updates
-    </release>	
-	<release date="2024-06-07" version="0.9.3" tag="v0.9.3" >
+    </release>    
+    <release date="2024-06-07" version="0.9.3" tag="v0.9.3" >
       - Other minor updates
     </release>
-  </releases>
+</releases>
+
 
   <keywords>
     <!-- keywords for indexing -->
