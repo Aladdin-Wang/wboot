@@ -1145,7 +1145,7 @@ bool ymodem_init(ymodem_t *ptThis, ymodem_ops_t *ptOps)
 
     this.chState = 0;
     /* Assign the provided callback functions to the operations member of the ymodem structure. */
-    this.ptOps = ptOps;
+		memcpy(&this.tOps,ptOps,sizeof(this.tOps));
     /* Return true to indicate successful initialization. */
     return true;
 }

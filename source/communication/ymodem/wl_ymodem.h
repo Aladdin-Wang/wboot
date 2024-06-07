@@ -47,6 +47,22 @@ typedef enum {
     PACKET_FAIL                     = -7,    //!< packet faile
 } ymodem_state_t;
 
+typedef struct ymodem_t ymodem_t;
+/* Callback type definitions for various YMODEM operations */
+typedef bool (ymodem_call_back)(ymodem_t *ptObj,uint8_t *pchBuffer, uint16_t *phwSize);
+typedef uint16_t (ymodem_read_call_back)(ymodem_t *ptObj,uint8_t* pchByte, uint16_t hwSize);
+typedef bool (ymodem_write_call_back)(ymodem_t *ptObj,uint8_t* pchByte, uint16_t hwSize);
+
+/* virtual function table for encapsulating YMODEM operation functions */
+typedef struct ymodem_ops_t {
+    uint16_t hwSize; /* Size of the data block */
+    uint8_t *pchBuffer; /* Pointer to data buffer */
+    ymodem_call_back *fnOnFilePath; /* Callback for file path operation */
+    ymodem_call_back *fnOnFileData; /* Callback for file data operation */
+    ymodem_read_call_back *fnReadData; /* Callback for reading data */
+    ymodem_write_call_back *fnWriteData; /* Callback for writing data */
+} ymodem_ops_t;
+
 /* Struct for holding YMODEM package read data  */
 typedef struct ymodem_read_timeout_t {
     uint8_t  chState;
@@ -66,74 +82,56 @@ typedef struct ymodem_package_t {
     uint16_t hwCheck; /* Calculated checksum/CRC value */
 } ymodem_package_t;
 
-/*Pre Declaration*/
-typedef struct ymodem_ops_t ymodem_ops_t;
 /* Struct for handling the YMODEM protocol interaction */
 typedef struct ymodem_t {
     uint8_t chState; /* Current state of the YMODEM operation */
     uint8_t chByte; /* Byte value used for control operations */
     uint8_t chTryCount; /* Counter for retry attempts */
     uint8_t chPacketNum; /* Packet number in sequence */
-    ymodem_ops_t *ptOps; /* virtual function for YMODEM operations */
+    ymodem_ops_t tOps; /* virtual function for YMODEM operations */
     ymodem_package_t tPackage; /* Package related information */
     ymodem_read_timeout_t tReadDataTimeout;
     ymodem_event_t tEvent;
 } ymodem_t;
 
-/* Callback type definitions for various YMODEM operations */
-typedef bool (ymodem_call_back)(ymodem_t *ptObj,uint8_t *pchBuffer, uint16_t *phwSize);
-typedef uint16_t (ymodem_read_call_back)(ymodem_t *ptObj,uint8_t* pchByte, uint16_t hwSize);
-typedef bool (ymodem_write_call_back)(ymodem_t *ptObj,uint8_t* pchByte, uint16_t hwSize);
-
-/* virtual function table for encapsulating YMODEM operation functions */
-typedef struct ymodem_ops_t {
-    uint16_t hwSize; /* Size of the data block */
-    uint8_t *pchBuffer; /* Pointer to data buffer */
-    ymodem_call_back *fnOnFilePath; /* Callback for file path operation */
-    ymodem_call_back *fnOnFileData; /* Callback for file data operation */
-    ymodem_read_call_back *fnReadData; /* Callback for reading data */
-    ymodem_write_call_back *fnWriteData; /* Callback for writing data */
-} ymodem_ops_t;
-
-
 static inline uint16_t __ymodem_read_data_timeout(ymodem_t *ptObj,uint8_t* pchByte, uint16_t hwSize)
 {
-    return (*ptObj->ptOps->fnReadData)(ptObj,pchByte,hwSize);
+    return (*ptObj->tOps.fnReadData)(ptObj,pchByte,hwSize);
 }
 
 static inline bool __ymodem_write_data(ymodem_t *ptObj,uint8_t* pchByte, uint16_t hwSize)
 {
-    return (*ptObj->ptOps->fnWriteData)(ptObj,pchByte,hwSize);
+    return (*ptObj->tOps.fnWriteData)(ptObj,pchByte,hwSize);
 }
 
 static inline bool __file_path(ymodem_t *ptObj,uint8_t *pchBuffer, uint16_t *phwSize)
 {
-    return (*ptObj->ptOps->fnOnFilePath)(ptObj,pchBuffer,phwSize);	
+    return (*ptObj->tOps.fnOnFilePath)(ptObj,pchBuffer,phwSize);	
 }
 
 static inline bool __file_data(ymodem_t *ptObj,uint8_t *pchBuffer, uint16_t *phwSize)
 {
-    return (*ptObj->ptOps->fnOnFileData)(ptObj,pchBuffer,phwSize);	
+    return (*ptObj->tOps.fnOnFileData)(ptObj,pchBuffer,phwSize);	
 }
 
 static inline uint16_t __get_size(ymodem_t *ptObj)
 {
-    return ptObj->ptOps->hwSize;		
+    return ptObj->tOps.hwSize;		
 }
 
 static inline uint16_t * __get_size_addr(ymodem_t *ptObj)
 {
-    return &ptObj->ptOps->hwSize;		
+    return &ptObj->tOps.hwSize;		
 }
 
 static inline void __set_size(ymodem_t *ptObj,uint16_t hwSize)
 {
-    ptObj->ptOps->hwSize = hwSize;		
+    ptObj->tOps.hwSize = hwSize;		
 }
 
 static inline uint8_t * __get_buffer_addr(ymodem_t *ptObj)
 {
-    return ptObj->ptOps->pchBuffer;		
+    return ptObj->tOps.pchBuffer;		
 }
 
 /* External function declarations for CRC calculation, YMODEM receive, and send operations */

@@ -1,17 +1,13 @@
 #ifndef BOOTLOADER_H_
 #define BOOTLOADER_H_
 #include ".\app_cfg.h"
-
+#include "../flash_blob/wl_flash_blob.h"
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MARK_SIZE                 64
-
 // <o>The user data size
 //  <i>Default: 192
-//  <i>Must be aligned to 64 bytes
 #define USER_DATA_SIZE            192
-#define USER_DATA_SIZE_ALIGND     (((USER_DATA_SIZE) + (64) - 1) & ~((64) - 1))
 
 typedef struct {
     char chProjectName[16];
@@ -20,18 +16,24 @@ typedef struct {
     char chSoftAppVersion[16];
 	  char chAppCompileDate[16];
     char chAppCompileTime[16];
+	
     char chPortName[16];
 	  int wPortBaudrate;
 	  char wBoardId;
-    int wRestartTime;
+
 } msgSig_t;
 typedef struct {
     union {
         msgSig_t sig;
-        char B[sizeof(msgSig_t)];
+        uint8_t B[USER_DATA_SIZE];
     } msg_data;
 } user_data_t;
 
+extern user_data_t tUserData;
+extern void enter_bootloader(uint8_t *pchDate, uint16_t hwLength);
+extern void begin_download(void);
+extern void finalize_download(void);
+	
 #endif
 
 

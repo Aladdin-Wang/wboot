@@ -48,6 +48,7 @@
 
 #ifdef WL_USING_BOOT
 #include "./bootloader/bootloader.h"
+#include "./communication/ymodem/wl_ymodem_ota.h"
 #endif
 
 #endif

@@ -1,7 +1,7 @@
 #include "../wl_flash_blob.h"
 #include "STM32_FLASH_DEV.c"
 
-#if defined(STM32F103xE) || defined(STM32F105xC)
+#if defined(STM32F103xB)||defined(STM32F103xE) || defined(STM32F105xC)
     typedef volatile unsigned char  vu8;
     typedef volatile unsigned long  vu32;
     typedef volatile unsigned short vu16;
@@ -258,9 +258,8 @@ static int32_t Init(uint32_t adr, uint32_t clk, uint32_t fnc)
     flashBase = adr;
     flashSize = ((*((u32 *)FLASHSIZE_BASE)) & 0x0000FFFF) << 10;
     flashBankSize = flashSize >> 1;
-    #elif defined (STM32F103xE) || defined(STM32F105xC)
+    #elif defined (STM32F103xB) || defined (STM32F103xE) || defined(STM32F105xC)
     base_adr = adr & ~(BANK1_SIZE - 1);          // Align to Size Boundary
-		FLASH->ACR |= FLASH_ACR_LATENCY_2;
     // Unlock Flash
     FLASH->KEYR  = FLASH_KEY1;
     FLASH->KEYR  = FLASH_KEY2;
@@ -298,7 +297,7 @@ static int32_t UnInit(uint32_t fnc)
     #elif defined(STM32G431xx)
     FLASH->CR |= FLASH_CR_LOCK;                            /* Lock Flash operation */
     DSB();
-    #elif defined (STM32F103xE) || defined(STM32F105xC)
+    #elif defined (STM32F103xB) || defined (STM32F103xE) || defined(STM32F105xC)
     FLASH->CR  |=  FLASH_LOCK;
     #ifdef STM32F10x_1024
     FLASH->CR2 |=  FLASH_LOCK;                    // Flash bank 2
@@ -348,7 +347,7 @@ static int32_t EraseChip(void)
     while (FLASH->SR & FLASH_SR_BSY);
 
     return (0);
-    #elif defined (STM32F103xE) || defined(STM32F105xC)
+    #elif defined (STM32F103xB) || defined (STM32F103xE) || defined(STM32F105xC)
     FLASH->CR  |=  FLASH_MER;                     // Mass Erase Enabled
     FLASH->CR  |=  FLASH_STRT;                    // Start Erase
 
@@ -394,7 +393,7 @@ static int32_t EraseChip(void)
     return (0);
     #endif
 }
-#include "stdio.h"
+
 /*
  *  Erase Sector in Flash Memory
  *    Parameter:      adr:  Sector Address
@@ -407,7 +406,7 @@ static int32_t EraseSector(uint32_t adr)
 
     /*Variable used for Erase procedure*/
 
-    #if  defined(STM32F105xC) || defined(STM32F103xE)
+    #if  defined (STM32F103xB) || defined(STM32F105xC) || defined(STM32F103xE)
     #ifdef STM32F10x_1024
 
     if (adr < (base_adr + BANK1_SIZE)) {          // Flash bank 2
@@ -472,6 +471,8 @@ static int32_t EraseSector(uint32_t adr)
     FLASH->CR |=  ((n << FLASH_SNB_POS) & FLASH_SNB_MSK); // Sector Number
     FLASH->CR |=  FLASH_STRT;                             // Start Erase
 
+    while (FLASH->SR & FLASH_SR_BSY);
+
     FLASH->CR &= ~FLASH_SER;                              // Page Erase Disabled
 
     if (FLASH->SR & FLASH_PGERR) {                        // Check for Error
@@ -530,7 +531,7 @@ static int32_t ProgramPage(uint32_t addr, uint32_t sz, uint8_t* buf)
 {
     int32_t result = 0;
 
-    #if defined(STM32F303x8) || defined(STM32F105xC) || defined(STM32F103xE)
+    #if defined (STM32F103xB) ||defined(STM32F303x8) || defined(STM32F105xC) ||  defined(STM32F103xE)
     uint32_t end_addr   = addr + sz;
 
     sz = (sz + 1) & ~1;                           // Adjust size for Half Words
