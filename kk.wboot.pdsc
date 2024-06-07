@@ -20,11 +20,11 @@
     <release version="9.9.9" tag="v9.9.9">
       Active development ...
     </release>
+	<release date="2024-06-07" version="0.9.4" tag="v0.9.4" >
+      - updates
+    </release>	
 	<release date="2024-06-07" version="0.9.3" tag="v0.9.3" >
       - Other minor updates
-    </release>
-	<release date="2024-06-05" version="0.9.2" tag="v0.9.2" >
-      - minor updates
     </release>
   </releases>
 

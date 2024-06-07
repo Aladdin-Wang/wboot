@@ -24,6 +24,11 @@ jobs:
         run: |
           git fetch --tags --force
           
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'   
+          
       - name: Make gen_pack.sh executable
         run: chmod +x ./gen_pack.sh
 
