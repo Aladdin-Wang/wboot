@@ -92,8 +92,8 @@
 		
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
-		  <require Cclass="Boot Serve" Cgroup="wboot" Csub="FlashDrv"/>
-		  <require Cclass="Boot Serve" Cgroup="wboot" Csub="Core"/>		  
+		  <require Cclass="BootServe" Cgroup="wboot" Csub="FlashDrv"/>
+		  <require Cclass="BootServe" Cgroup="wboot" Csub="Core"/>		  
 		</condition>
 		
         <condition id="Cortex-M Arm GCC">
