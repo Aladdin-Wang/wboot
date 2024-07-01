@@ -13,22 +13,22 @@ static bool ymodem_recv_file_name(ymodem_t *ptObj, uint8_t *pchBuffer, uint16_t 
     ymodem_receive_t *(ptThis) = container_of(ptObj, ymodem_receive_t, parent);
     assert(NULL != ptObj);
 
-    this.wOffSet = 0;
-    this.pchFileName = (char *)&pchBuffer[0];
-    this.pchFileSize = (char *)&pchBuffer[strlen(this.pchFileName) + 1];
-    this.wFileSize = atol(this.pchFileSize);
-
-    if(this.wFileSize <= 0) {
+	  if(pchBuffer[0] == 0) {
         *phwSize = 0;
         return true;
     }
+			
+    this.wOffSet = 0;
+    strcpy(this.chFileName,(char *)&pchBuffer[0]);
+    this.pchFileSize = (char *)&pchBuffer[strlen(this.chFileName) + 1];
+    this.wFileSize = atol(this.pchFileSize);
 
-    printf("Ymodem file_name:%s \r\n", this.pchFileName);
+    printf("Ymodem file_name:%s \r\n", this.chFileName);
     printf("Ymodem file_size:%d \r\n", this.wFileSize);
 
 
     if(strlen(tUserData.msg_data.sig.chProjectName) > 0) {
-        if(strcmp(tUserData.msg_data.sig.chProjectName, this.pchFileName) != 0 ) {
+        if(strcmp(tUserData.msg_data.sig.chProjectName, this.chFileName) != 0 ) {
             printf("Firmware Name Check failure.");
             return false;
         }

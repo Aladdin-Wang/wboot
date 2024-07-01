@@ -15,7 +15,7 @@ typedef struct ymodem_receive_t {
     ymodem_t      parent;
     char         *pchQueueBuf;
     byte_queue_t  tByteInQueue;
-    char         *pchFileName;
+    char          chFileName[16];
     char         *pchFileSize;
     uint32_t      wFileSize;
     uint32_t      wOffSet;

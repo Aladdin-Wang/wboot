@@ -140,6 +140,14 @@ void enter_bootloader(uint8_t *pchDate, uint16_t hwLength)
     target_flash_uninit(APP_PART_ADDR);
 }
 
+
+void reset_bootloader(void)
+{
+    target_flash_init(APP_PART_ADDR);
+    target_flash_erase(APP_PART_ADDR + APP_PART_SIZE - (3*MARK_SIZE), 3*MARK_SIZE);
+    target_flash_uninit(APP_PART_ADDR);
+}
+
 /**
  * @brief Initialize flash memory for a new download process.
  * 
