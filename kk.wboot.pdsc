@@ -65,21 +65,18 @@
 		</condition> 		
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
-		  <require Cclass="BootServe" Cgroup="components" Csub="FlashDrv"/>
-		  <require Cclass="BootServe" Cgroup="components" Csub="Serve"/>		  
+		  <require Cclass="BootServe" Cgroup="components" Csub="FlashDrv"/>		  
 		</condition>
 		
         
     </conditions>  
   <components>
     <!-- signals_slots 组件 -->
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="Serve" Cgroup="components" >
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="cfg" Cgroup="components" >
       <description>Contains components such as queue, shell, ymodem, subscribe_publish, signals_slots.</description>
 		<files>
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" attr="config" version="0.9.4"/>
-			<file category="source" name="source/wl_serve.c" attr="config" version="0.9.4"/>
-			<file category="header" name="source/wl_serve.h" attr="config" version="0.9.4"/>
 		</files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
@@ -162,24 +159,24 @@
     <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_ota" Cgroup="example" condition="ymodem_ota">
         <description>wboot check_agent_engine</description>
         <files>
-		    <file category="include" name="example/intelhex/"/>
-            <file category="source" name="example/ymodem_ota.c" attr="config" version="0.9.4"/>
-			<file category="source" name="example/ymodem_ota.h" attr="config" version="0.9.4"/>
-			<file category="sourceC" name="example/intelhex/intelhex.c"/>
+		    <file category="include" name="example/ymodem/intelhex/"/>
+            <file category="source" name="example/ymodem/ymodem_ota.c" attr="config" version="0.9.4"/>
+			<file category="source" name="example/ymodem/ymodem_ota.h" attr="config" version="0.9.4"/>
+			<file category="sourceC" name="example/ymodem/intelhex/intelhex.c"/>
         </files>
     </component>
     <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_receive" Cgroup="example" condition="ymodem">
         <description>wboot check_agent_engine</description>
         <files>
-            <file category="source" name="example/ymodem_receive.c" attr="config" version="0.9.4"/>
-			<file category="source" name="example/ymodem_receive.h" attr="config" version="0.9.4"/>
+            <file category="source" name="example/ymodem/ymodem_receive.c" attr="config" version="0.9.4"/>
+			<file category="source" name="example/ymodem/ymodem_receive.h" attr="config" version="0.9.4"/>
         </files>
     </component>
     <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_send" Cgroup="example" condition="ymodem">
         <description>wboot check_agent_engine</description>
         <files>
-            <file category="source" name="example/ymodem_send.c" attr="config" version="0.9.4"/>
-			<file category="source" name="example/ymodem_send.h" attr="config" version="0.9.4"/>
+            <file category="source" name="example/ymodem/ymodem_send.c" attr="config" version="0.9.4"/>
+			<file category="source" name="example/ymodem/ymodem_send.h" attr="config" version="0.9.4"/>
         </files>
     </component>	
   </components>
