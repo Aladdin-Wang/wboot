@@ -140,6 +140,13 @@
             <file category="sourceC" name="source/check_agent_engine/wl_check_agent_engine.c"/> 
         </files>
     </component>	
+	
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_ota" Cgroup="example" condition="ymodem_ota">
+        <description>wboot check_agent_engine</description>
+        <files>
+            <file category="source" name="example/ymodem_ota.c" attr="config" version="0.9.4"/>
+        </files>
+    </component>	
   </components>
 
   <!-- optional taxonomy section for defining new component Class and Group names -->
