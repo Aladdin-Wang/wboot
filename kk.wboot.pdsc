@@ -17,9 +17,6 @@
   <repository type="git">https://github.com/Aladdin-Wang/wboot.git</repository>
 
 <releases>
-    <release date="2024-07-27" version="0.9.5" tag="v0.9.5" >
-      - updates
-    </release>
     <release date="2024-06-07" version="0.9.4" tag="v0.9.4" >
       - updates
     </release>    
@@ -39,7 +36,24 @@
 		<condition id="FlashDrv">
 		  <description>wboot flash drive</description>
 		</condition> 
-		
+		<condition id="ymodem">
+		  <description>wboot ymodem</description>
+		</condition> 
+		<condition id="queue">
+		  <description>wboot queue</description>
+		</condition> 
+		<condition id="signals_slots">
+		  <description>wboot signals_slots</description>
+		</condition> 
+		<condition id="subscribe_publish">
+		  <description>wboot subscribe_publish</description>
+		</condition> 
+		<condition id="shell">
+		  <description>wboot shell</description>
+		</condition> 
+		<condition id="check_agent_engine">
+		  <description>wboot check_agent_engine</description>
+		</condition> 		
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
 		  <require Cclass="BootServe" Cgroup="wboot" Csub="FlashDrv"/>
