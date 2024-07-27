@@ -1,4 +1,4 @@
-#include "../wl_flash_blob.h"
+#include "../flash_blob.h"
 #include "GD32_FLASH_DEV.c"
 /*
  *  Initialize Flash Programming Functions
@@ -75,7 +75,7 @@ static int32_t ProgramPage(uint32_t addr, uint32_t sz, uint8_t* buf)
     return result;
 }
 
-const  flash_blob_t  onchip_flash_device = {
+const  flash_fal_t  onchip_flash_device = {
     .tFlashops.Init = Init,  
     .tFlashops.UnInit = UnInit,  
     .tFlashops.EraseChip = EraseChip,  

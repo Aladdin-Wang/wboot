@@ -15,40 +15,62 @@
 *                                                                           *
 ****************************************************************************/
 
-#ifndef __USE_SERVICE_H__
-#define __USE_SERVICE_H__
+#include "wl_msg_check_str.h"
+#if defined(WL_USING_MSG_MAP)
+def_simple_fsm( check_string,
+    def_params(
+            const char *pchStr;
+            uint16_t hwIndex;
+            uint8_t  chByte;
+            get_byte_t *ptGetByte;
+    )
+)
 
-/*============================ INCLUDES ======================================*/
-#include "./app_cfg.h"
+fsm_initialiser( check_string,
+    args(
+        const char *pchString,
+        get_byte_t *ptGetByte
+    ))
 
-#ifdef WL_USING_RINGEQUEUE
-#include "./generic/queue/wl_queue.h"
+    init_body (
+        if (NULL == pchString || NULL == ptGetByte ) {
+            abort_init();
+        }
+        this.pchStr = pchString;
+        this.ptGetByte = ptGetByte;       
+    )
+
+fsm_implementation(  check_string )
+{
+    def_states( IS_END_OF_STR, INPUT_CHAR,IS_TIMEOUT)
+
+    body_begin();
+
+    on_start(
+        this.hwIndex = 0; 
+        update_state_to(IS_END_OF_STR);
+    )
+
+    state(IS_END_OF_STR) {
+        if(this.pchStr[this.hwIndex] == '\0') {
+            fsm_cpl();
+        }
+        update_state_to(INPUT_CHAR);
+    }
+
+    state(INPUT_CHAR) {
+        if(this.ptGetByte->fnGetByte(this.ptGetByte,&(this.chByte),1)) {       
+            if(this.chByte != this.pchStr[this.hwIndex++]){         
+                fsm_user_req_drop();
+            }
+            update_state_to(IS_END_OF_STR);
+        }
+        reset_fsm();
+    }
+
+    body_end();
+}
+
 #endif
 
-#ifdef  WL_USING_CHECK_ENGINE
-#include "./check_agent_engine/wl_check_agent_engine.h"
-#endif
 
-#ifdef WL_USING_SIGNALS_SLOTS
-#include "./communication/signals_slots/wl_signals_slots.h"
-#endif
-
-#ifdef WL_USING_SUBSCRIBE_PUBLISH
-#include "./communication/subscribe_publish/wl_subscribe_publish.h"
-#endif
-
-#ifdef WL_USING_SHELL
-#include "./communication/shell/wl_shell.h"
-#endif
-
-#ifdef WL_USING_FLASH_BLOB
-#include "./flash_blob/flash_blob.h"
-#endif
-
-
-#ifdef WL_USING_BOOT
-#include "./bootloader/bootloader.h"
-#include "./communication/ymodem/wl_ymodem_ota.h"
-#endif
-
-#endif

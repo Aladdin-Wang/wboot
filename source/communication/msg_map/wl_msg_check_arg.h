@@ -15,58 +15,44 @@
 *                                                                           *
 ****************************************************************************/
 
-#ifndef __SERVE_CHECK_AGENT_ENGINE_H_
-#define __SERVE_CHECK_AGENT_ENGINE_H_
+#ifndef __SERVE_MSG_CHECK_ARG_H_
+#define __SERVE_MSG_CHECK_ARG_H_
 #include "./app_cfg.h"
-#if USE_SERVICE_CHECK_USE_PEEK == ENABLED
-#include "../generic/queue/wl_queue.h"
-#include "../fsm/simple_fsm.h"
-
+#if defined(WL_USING_MSG_MAP)
+#include "../.././fsm/simple_fsm.h"
+#include "wl_msg_get_byte.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
-typedef  struct _peek_byte_t peek_byte_t;
-typedef bool peek_byte_hanlder_t(peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
-struct _peek_byte_t{
-    void *pTarget;
-    peek_byte_hanlder_t *fnGetByte;
-};
-
-typedef  struct _check_agent_t check_agent_t;
-typedef fsm_rt_t check_hanlder_t(void *ptThis);
-struct _check_agent_t{
-    check_agent_t *ptNext;
-    check_hanlder_t *fnCheck;
-    void * pAgent;
-    uint16_t hwPeekStatus;
-    bool bIsKeepingContext;
-};
-
-declare_simple_fsm(check_use_peek);
-extern_fsm_implementation(check_use_peek);
-extern_fsm_initialiser( check_use_peek,
+declare_simple_fsm(check_arg);
+extern_fsm_implementation(check_arg);
+extern_fsm_initialiser( check_arg,
         args(
-                byte_queue_t *ptByteInQueue
+            const char *pchString,
+            get_byte_t *ptGetByte,
+            int32_t *argc,
+            char **argv,
+            bool bArgIsString
         ))
-
-extern_simple_fsm(check_use_peek,
+/*! fsm used to output specified string */
+extern_simple_fsm(check_arg,
     def_params(
-            check_agent_t *ptFreeList;
-            check_agent_t *ptCheckList;
-            byte_queue_t *ptByteInQueue;
-            peek_byte_t  tPeekByte;
-            bool bIsRequestDrop;
+            const char *pchStr;
+            uint16_t hwIndex;
+            int16_t hwCount;
             uint8_t chByte;
+            bool bArgIsString;
+            get_byte_t *ptGetByte;
+            uint8_t chArgNums;
+            int16_t chArgLen;
+            char chArgs[MSG_ARG_LEN];
+            int32_t *argc;           
+            char **argv;
     )
 )
-extern peek_byte_t *get_read_byte_interface(fsm_check_use_peek_t *ptObj);
-extern bool agent_register(fsm_check_use_peek_t *ptObj,check_agent_t *ptNewItem);
-extern bool agent_unregister(fsm_check_use_peek_t *ptObj,check_agent_t *ptNote);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif
-#endif /* APPLICATIONS_CHECK_USE_PEEK_H_ */
+#endif 

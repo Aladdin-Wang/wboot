@@ -31,9 +31,9 @@
 #define MSG_ARG_MAX             8
 // </e>
 
-// <h>Flash Blob Configuration
-// <c1>Flash Blob Management
-//  <i>Flash Blob Management
+// <h>Flash BLOB Configuration
+// <c1>Flash BLOB Management
+//  <i>Flash BLOB Management
 #define WL_USING_FLASH_BLOB
 // </c>
 // </h>

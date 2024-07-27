@@ -18,17 +18,29 @@
 #include "wl_check_agent_engine.h"
 #include <string.h>
 #if USE_SERVICE_CHECK_USE_PEEK == ENABLED
-
+static bool peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
 def_simple_fsm( check_use_peek,
     def_params(
             check_agent_t *ptFreeList;
             check_agent_t *ptCheckList;
+            byte_queue_t *ptByteInQueue;
+            peek_byte_t  tPeekByte;						
+            bool bIsRequestDrop;
+            uint8_t chByte;
     )
 )
 
-fsm_initialiser(check_use_peek)
+fsm_initialiser(check_use_peek,
+        args(
+                byte_queue_t *ptByteInQueue
+        ))
     init_body (
-
+        if (NULL == ptByteInQueue) {
+            abort_init();
+        }
+        this.ptByteInQueue = ptByteInQueue;
+				this.tPeekByte.pTarget = (void *)(this.ptByteInQueue);
+				this.tPeekByte.fnGetByte = peek_byte;
     )
 
 
@@ -39,27 +51,61 @@ fsm_implementation(check_use_peek)
         body_begin();
 
         on_start(
+                this.bIsRequestDrop = true;
                 this.ptFreeList = this.ptCheckList;
                 update_state_to(IS_END_OF_AGENT);
         )
 
         state(IS_END_OF_AGENT) {
             if(this.ptFreeList == NULL){
+                if(this.bIsRequestDrop != false){
+                    dequeue(this.ptByteInQueue,&this.chByte);
+                    for(check_agent_t *ptNote = this.ptCheckList;ptNote != NULL; ptNote = ptNote->ptNext){
+                        ptNote->hwPeekStatus = 0;
+                    }                    
+                }
                 fsm_cpl();
+            }
+            reset_peek(this.ptByteInQueue);
+            if(this.ptFreeList->bIsKeepingContext != false){
+                restore_peek_status(this.ptByteInQueue,this.ptFreeList->hwPeekStatus);
             }
             update_state_to(CHECK_AGENT);
         }
         state(CHECK_AGENT) {
             fsm_rt_t tFsm = this.ptFreeList->fnCheck(this.ptFreeList->pAgent);
-            if(fsm_rt_on_going == tFsm){               
+            if(fsm_rt_user_req_drop == tFsm){
+                if(this.ptFreeList->bIsKeepingContext != false){
+                    this.ptFreeList->hwPeekStatus = get_peek_status(this.ptByteInQueue);
+                }                
+                this.ptFreeList = this.ptFreeList->ptNext;
+                transfer_to(IS_END_OF_AGENT);                
+            }else if(fsm_rt_on_going == tFsm){
+                this.bIsRequestDrop = false;
+                if(this.ptFreeList->bIsKeepingContext != false){
+                    this.ptFreeList->hwPeekStatus = get_peek_status(this.ptByteInQueue);
+                }                
                 this.ptFreeList = this.ptFreeList->ptNext;
                 transfer_to(IS_END_OF_AGENT);
             }else{
+                get_all_peeked(this.ptByteInQueue);
+                for(check_agent_t *ptNote = this.ptCheckList;ptNote != NULL; ptNote = ptNote->ptNext){
+                    ptNote->hwPeekStatus = 0;
+                }               
                 fsm_cpl();
             }
         }
         body_end();
     }
+
+peek_byte_t *get_read_byte_interface(fsm_check_use_peek_t *ptObj)
+{
+    __fsm_check_use_peek_t *ptThis = (__fsm_check_use_peek_t *)ptObj;
+    if (NULL == ptThis) {
+        return NULL;
+    }
+    return &(this.tPeekByte);
+}
 
 bool agent_register(fsm_check_use_peek_t *ptObj,check_agent_t *ptNewItem)
 {
@@ -98,4 +144,10 @@ bool agent_unregister(fsm_check_use_peek_t *ptObj,check_agent_t *ptItem)
     }
     return false;
 }
+
+static bool peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength)
+{
+    return peek_queue(ptThis->pTarget,pchByte,hwLength);
+}
+
 #endif

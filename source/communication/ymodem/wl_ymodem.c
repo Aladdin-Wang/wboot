@@ -110,20 +110,8 @@ uint16_t ymodem_crc16(unsigned char *q, int len)
 }
 #endif
 
-
-/**
- * @brief Callback function called when YMODEM transfer is completed
- *
- * This function is marked as weak, allowing it to be overridden by a
- * stronger definition in a user application if needed. It is called when
- * the YMODEM transfer is completed, and the result of the transfer is
- * provided through the 'bResult' parameter.
- *
- * @param pObj Pointer to the object associated with the callback
- * @param bResult Result of the YMODEM transfer (true if successful, false otherwise)
- */
 __attribute__((weak))
-void ymodem_transfer_completed(ymodem_t *ptObj, bool bResult)
+void ymodem_transfer_state(ymodem_t *ptObj,ymodem_state_t tState)
 {
 
 
@@ -136,7 +124,6 @@ int64_t get_system_time_ms(void)
     wTimeCount ++;
     return wTimeCount;
 }
-
 
 static ymodem_state_t ymodem_read_data_with_timeout(ymodem_read_timeout_t *ptThis, ymodem_t *ptObj, uint8_t* pchByte, uint16_t hwSize, uint16_t hwTimeout)
 {
@@ -151,13 +138,14 @@ static ymodem_state_t ymodem_read_data_with_timeout(ymodem_read_timeout_t *ptThi
         case START: {
             this.hwIndex = 0;
             this.hwRemainSize = hwSize;
-					  this.lTimeCountms = hwTimeout + get_system_time_ms();
+            this.lTimeCountms = hwTimeout + get_system_time_ms();
             /* Begin the process of reading a new packet by transitioning to the data state. */
             this.chState = READ_DOING;
         }
 
         case READ_DOING: {
             uint16_t hwReadLen  = __ymodem_read_data_timeout(ptObj, (pchByte + this.hwIndex), this.hwRemainSize);
+
             if(hwReadLen == this.hwRemainSize) {
                 YMODEM_READ_DATA_TIMEOUT_RESET_FSM();
                 return PACKET_CPL;
@@ -273,6 +261,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
                 /* Inverse packet number read, check if it correctly complements the packet number. */
                 if(0xFF != (this.chBlk ^ this.chNBlk)) {
                     /* Packet validation failure due to mismatch in packet numbers, requiring FSM reset. */
+                    PRINT_ERROR("incorrect NBlk");
                     YMODEM_RECEIVE_PACKAGE_RESET_FSM();
                     return PACKET_INCORRECT_NBlk;
                 }
@@ -335,6 +324,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
                 /* Combine both CRC bytes to form the complete CRC value received with the packet. */
                 if(this.hwCheck != ((uint16_t)this.chCheck[0] << 8) + (uint16_t)this.chCheck[1]) {
                     /* CRC mismatch, implying data corruption. Reset FSM and report checksum error. */
+                    PRINT_ERROR("incorrect checkout");
                     YMODEM_RECEIVE_PACKAGE_RESET_FSM();
                     return PACKET_INCORRECT_CHECKOUT;
                 } else {
@@ -357,6 +347,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
                 /* Correct packet received, or it's a repeat of the previous packet. */
                 if(this.chBlk == (chPacketNum - 1)) {
                     /* Duplicate packet received, no further processing needed for this packet. */
+                    PRINT_ERROR("duplicate packet number");
                     YMODEM_RECEIVE_PACKAGE_RESET_FSM();
                     return PACKET_DUPLICATE_PACKET_NUMBER;
                 }
@@ -367,6 +358,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
                 return PACKET_CPL;
             } else {
                 /* Packet number does not match expected value, indicating wrong packet sequence. */
+                PRINT_ERROR("incorrect packet number");
                 YMODEM_RECEIVE_PACKAGE_RESET_FSM();
                 return PACKET_INCORRECT_PACKET_NUMBER;
             }
@@ -386,12 +378,12 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
  * @param ptThis Pointer to the ongoing Ymodem context.
  * @return fsm_rt_t The status of the file reception, ongoing status, or an error code.
  */
-ymodem_state_t ymodem_receive(ymodem_t *ptThis)
+fsm_ym_t ymodem_receive(ymodem_t *ptThis)
 {
     /* Macro to reset the finite state machine (FSM) */
 #define YMODEM_RECEIVE_RESET_FSM()    do{this.chState = 0;}while(0)
     /* Enum defining FSM states for receiving */
-    enum { START = 0, SEND_C1, RECEIVE_PACK_PATH, SEND_ACK1, SEND_C2, RECEIVE_PACK_DATA, SEND_ANSWER, SEND_NAK, RECIVE_EOT, SEND_ACK2};
+    enum { START = 0, SEND_C1, RECEIVE_PACK_PATH, SEND_ACK, SEND_C2, RECEIVE_PACK_DATA, SEND_ANSWER, ANSWER_NAK, RECIVE_EOT, ANSWER_ACK};
 
     /* Processing the incoming data using a switch-case statement based on the current state. */
     switch(this.chState) {
@@ -421,36 +413,37 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
             /* Completion of file path package reception. */
             if(tPackageState == PACKET_CPL) {
                 /* Successful reception, invoke user-defined callback to handle the file path. */
-                if(__file_path(ptThis, __get_buffer_addr(ptThis), __get_size_addr(ptThis))) {
+                if((this.tOps.pchBuffer[0] == 0) || (__get_size(ptThis) == __file_path(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis)))) {
                     this.chByte = ACK; /* Setting ACK to acknowledge the file path packet. */
                 } else {
                     /* File path handling by the callback failed, reset FSM and signal an error. */
-                    ymodem_transfer_completed(ptThis, false);
+                    PRINT_ERROR("incorrect data size");
+                    ymodem_transfer_state(ptThis, PACKET_INCORRECT_SIZE);
                     YMODEM_RECEIVE_RESET_FSM();
-                    return PACKET_FAIL;
+                    return fsm_ym_err;
                 }
 
                 /* Preparing to acknowledge the reception of the file path packet. */
-                this.chState = SEND_ACK1;
+                this.chState = SEND_ACK;
             } else if(tPackageState == PACKET_TIMEOUT) {
                 /* Timeout while waiting for the package, leading to an FSM reset and error signal. */
                 YMODEM_RECEIVE_RESET_FSM();
-                return PACKET_FAIL;
+                return fsm_ym_req_timeout;
             } else {
                 /* If the packet is not yet complete or failed, break to re-evaluate the state. */
                 break;
             }
         }
 
-        case SEND_ACK1: {
+        case SEND_ACK: {
             /* Acknowledging the file path packet or reporting an error if the buffer was empty. */
             if(__ymodem_write_data(ptThis, &this.chByte, 1)) {
                 /* Check if the write operation signaled the end of the packet stream. */
-                if(__get_size(ptThis) == 0) {
+                if(this.tOps.pchBuffer[0] == 0) {
                     /* No more data, complete transmission and reset FSM. */
-                    ymodem_transfer_completed(ptThis, true);
+                    ymodem_transfer_state(ptThis, PACKET_CPL);
                     YMODEM_RECEIVE_RESET_FSM();
-                    return PACKET_CPL;
+                    return fsm_ym_cpl;
                 }
 
                 /* Move to the next packet number in preparation for the next data packet. */
@@ -482,7 +475,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
             switch(tPackageState) {
                 case PACKET_ON_GOING:
                     /* Data packet is being received, informing the system that reception is ongoing. */
-                    return PACKET_ON_GOING;
+                    return fsm_ym_on_going;
 
                 case PACKET_FAIL:
                     /* Data packet reception failed, plan to send a cancel signal. */
@@ -497,9 +490,8 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                     break;
 
                 case PACKET_CPL:
-
                     /* Complete data packet received, calling user callback to handle the data. */
-                    if(__file_data(ptThis, __get_buffer_addr(ptThis), __get_size_addr(ptThis))) {
+                    if(__file_data(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis)) == __get_size(ptThis)) {
                         /* Data handled successfully, prepare to acknowledge receipt. */
                         this.chPacketNum++;
                         this.chByte = ACK;
@@ -513,9 +505,9 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                     break;
 
                 case PACKET_INCORRECT_HEADER:
-									   return PACKET_INCORRECT_HEADER;
-								case PACKET_INCORRECT_NBlk:
-									   return PACKET_INCORRECT_NBlk;
+                case PACKET_INCORRECT_NBlk:
+                    return fsm_ym_req_drop;
+
                 case PACKET_INCORRECT_PACKET_NUMBER:
                 case PACKET_INCORRECT_CHECKOUT:
                 case PACKET_TIMEOUT:
@@ -548,8 +540,8 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                 case PACKET_EOT:
                     /* End Of Transmission (EOT) signifies the end, prepare to send NAK before final ACK. */
                     this.chByte = NAK;
-                    this.chState = SEND_NAK;
-                    return PACKET_ON_GOING;
+                    this.chState = ANSWER_NAK;
+                    return fsm_ym_on_going;
 
                 default:
                     /* Any other unknown packet state leads to breaking the switch to re-evaluate. */
@@ -563,22 +555,24 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                 /* Response successfully sent. Determine the next action based on the last received packet type. */
                 if(this.chByte == CAN) {
                     /* If a cancellation was sent, reset FSM and return error. */
-                    ymodem_transfer_completed(ptThis, false);
+                    PRINT_ERROR("try count max");
+                    ymodem_transfer_state(ptThis, PACKET_CAN);
                     YMODEM_RECEIVE_RESET_FSM();
-                    return PACKET_FAIL;
-                } else {
+                    return fsm_ym_err;
+                }else {
                     /* For other responses, continue by trying to receive the next data packet. */
                     this.chState = RECEIVE_PACK_DATA;
-                    break;
+                    return fsm_ym_cpl;
                 }
             }
         }
 
-        case SEND_NAK: {
+        case ANSWER_NAK: {
             /* Responding to the sender based on the result of the packet reception. */
             if(__ymodem_write_data(ptThis, &this.chByte, 1)) {
                 this.chState = RECIVE_EOT;
             }
+						break;
         }
 
         case RECIVE_EOT: {
@@ -588,30 +582,31 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
             if(PACKET_CPL == tFsm) {
                 /* Received the final EOT, acknowledge and prepare to conclude the session. */
                 if(this.chByte == EOT) {
-                    this.chState = SEND_ACK2;
+                    this.chState = ANSWER_ACK;
                 } else {
                     /* If the received byte is not EOT, remain in this state to retry. */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* Timeout waiting for EOT signifies an error, reset FSM and report it. */
-                ymodem_transfer_completed(ptThis, false);
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
                 YMODEM_RECEIVE_RESET_FSM();
-                return PACKET_TIMEOUT;
+                return fsm_ym_req_timeout;
             } else {
                 /* On any other read status, stay in this state to re-attempt EOT receipt. */
                 break;
             }
         }
 
-        case SEND_ACK2: {
+        case ANSWER_ACK: {
             /* Final acknowledgment after EOT to complete the session. */
             this.chByte = ACK;
 
             if(__ymodem_write_data(ptThis, &this.chByte, 1)) {
                 /* Successfully sent the final ACK, reset FSM and signal session completion. */
                 YMODEM_RECEIVE_RESET_FSM();
-                return PACKET_ON_GOING;
+                return fsm_ym_on_going;
             }
 
             /* If sending ACK fails, remain in this state for a retry. */
@@ -619,7 +614,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
     }
 
     /* Return the FSM ongoing status if not completed or no error has occurred. */
-    return PACKET_ON_GOING;
+    return fsm_ym_on_going;
 }
 
 /**
@@ -756,7 +751,7 @@ static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, ymodem_t *pt
  * @return fsm_rt_t The return value indicates the status of the transfer: fsm_rt_cpl for completion,
  *                  fsm_rt_err for error, or fsm_rt_on_going for an ongoing operation.
  */
-ymodem_state_t ymodem_send(ymodem_t *ptThis)
+fsm_ym_t ymodem_send(ymodem_t *ptThis)
 {
     /* Define macro to reset the FSM state of Ymodem send operation */
 #define YMODEM_SEND_RESET_FSM()    do{this.chState = 0;}while(0)
@@ -804,22 +799,25 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
             if(PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
                     /* 'C' received, proceed to send packet with file path information */
-                    if(__file_path(ptThis, __get_buffer_addr(ptThis), __get_size_addr(ptThis))) {
+                    if(__file_path(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis)) == __get_size(ptThis)) {
                         this.chState = SEND_PACK_PATH;
                     } else {
                         /* File path retrieval failed, reset state machine */
-                        ymodem_transfer_completed(ptThis, false);
-                        YMODEM_SEND_RESET_FSM();
-                        return PACKET_FAIL;
+                        PRINT_ERROR("incorrect size");
+                        ymodem_transfer_state(ptThis, PACKET_INCORRECT_SIZE);
+                        YMODEM_RECEIVE_RESET_FSM();
+                        return fsm_ym_err;
                     }
                 } else {
                     /* Non-C character received; remain in current state */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* ACK waiting period timed out; reset state machine */
-                YMODEM_SEND_RESET_FSM();
-                return PACKET_TIMEOUT;
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
+                YMODEM_RECEIVE_RESET_FSM();
+                return fsm_ym_req_timeout;
             } else {
                 /* Read in progress or other error; remain in current state */
                 break;
@@ -854,11 +852,11 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
             if(PACKET_CPL == tFsm) {
                 if(this.chByte == ACK) {
                     /* ACK received; prepare to send data packets */
-                    if(__get_size(ptThis) == 0) {
+                    if(this.tOps.pchBuffer[0] == 0) {
                         /* No more data to send; transfer complete */
-                        ymodem_transfer_completed(ptThis, true);
-                        YMODEM_SEND_RESET_FSM();
-                        return PACKET_CPL;
+                        ymodem_transfer_state(ptThis, PACKET_CPL);
+                        YMODEM_RECEIVE_RESET_FSM();
+                        return fsm_ym_cpl;
                     } else {
                         /* More data pending; increment packet number and proceed */
                         this.chPacketNum++;
@@ -866,13 +864,14 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                     }
                 } else {
                     /* Non-ACK character received; remain in current state */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* ACK waiting period timed out; reset state machine */
-                ymodem_transfer_completed(ptThis, false);
-                YMODEM_SEND_RESET_FSM();
-                return PACKET_TIMEOUT;
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
+                YMODEM_RECEIVE_RESET_FSM();
+                return fsm_ym_req_timeout;
             } else {
                 /* Read in progress or other error; remain in current state */
                 break;
@@ -889,38 +888,36 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
             if(PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
                     /* Validate received CRC_C before proceeding to send packet data */
-                    if(__file_data(ptThis, __get_buffer_addr(ptThis), __get_size_addr(ptThis))) {
-                        /* Prepare and process file data for transmission */
-                        if(__get_size(ptThis) <= MODEM_DATA_BUFFER_SIZE) {
-                            /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
-                            memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_DATA_BUFFER_SIZE - __get_size(ptThis));
-                        } else if(__get_size(ptThis) <= MODEM_1K_DATA_BUFFER_SIZE) {
-                            /* If hwSize is less than 1K buffer size, pad as well */
-                            memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_1K_DATA_BUFFER_SIZE - __get_size(ptThis));
-                        } else {
-                            /* hwSize too large, reset state machine and return error */
-                            ymodem_transfer_completed(ptThis, false);
-                            YMODEM_SEND_RESET_FSM();
-                            return PACKET_FAIL;
-                        }
+                    uint16_t hwNextPartData = __file_data(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis));
 
-                        /* Data prepared, proceed to send data packet */
-                        this.chState = SEND_PACK_DATA;
+                    /* Prepare and process file data for transmission */
+                    if(hwNextPartData <= MODEM_DATA_BUFFER_SIZE) {
+                        /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
+                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_DATA_BUFFER_SIZE - __get_size(ptThis));
+                    } else if(hwNextPartData <= MODEM_1K_DATA_BUFFER_SIZE) {
+                        /* If hwSize is less than 1K buffer size, pad as well */
+                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_1K_DATA_BUFFER_SIZE - __get_size(ptThis));
                     } else {
-                        /* Callback for file data failed, reset FSM and return error */
-                        ymodem_transfer_completed(ptThis, false);
-                        YMODEM_SEND_RESET_FSM();
-                        return PACKET_FAIL;
+                        /* hwSize too large, reset state machine and return error */
+                        PRINT_ERROR("incorrect size");
+                        ymodem_transfer_state(ptThis, PACKET_INCORRECT_SIZE);
+                        YMODEM_RECEIVE_RESET_FSM();
+                        return fsm_ym_err;
                     }
+
+                    /* Data prepared, proceed to send data packet */
+                    this.chState = SEND_PACK_DATA;
+
                 } else {
                     /* No 'C' received, remain in current state */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* Timeout elapsed while waiting for 'C', reset FSM and return error */
-                ymodem_transfer_completed(ptThis, false);
-                YMODEM_SEND_RESET_FSM();
-                return PACKET_TIMEOUT;
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
+                YMODEM_RECEIVE_RESET_FSM();
+                return fsm_ym_req_timeout;
             } else {
                 /* Other issues in reading, remain in current state */
                 break;
@@ -957,41 +954,29 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                     this.chTryCount = 0; // Reset the retry count
                     this.chPacketNum++; // Prepare the next packet
 
-                    if(__get_size(ptThis) < MODEM_DATA_BUFFER_SIZE) {
-                        /* If hwSize is less than the standard buffer size, prepare to send EOT (End Of Transmission) */
+                    /* Call the callback to fill buffer with next part of data */
+                    uint16_t hwNextPartData = __file_data(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis));
+
+                    /* Prepare and process file data for transmission */
+                    if(hwNextPartData == 0) {
+                        /* No data left to send, prepare to send EOT (End Of Transmission) */
                         this.chState = SEND_EOT1;
-                    } else if(__get_size(ptThis) < MODEM_1K_DATA_BUFFER_SIZE) {
-                        /* If hwSize is less than the standard buffer size, prepare to send EOT (End Of Transmission) */
-                        this.chState = SEND_EOT1;
+                    } else if(hwNextPartData <= MODEM_DATA_BUFFER_SIZE) {
+                        /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
+                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_DATA_BUFFER_SIZE - __get_size(ptThis));
+                        this.chState = SEND_PACK_DATA;
+                        return fsm_ym_cpl;
+                    } else if(hwNextPartData <= MODEM_1K_DATA_BUFFER_SIZE) {
+                        /* If hwSize is less than 1K buffer size, pad as well */
+                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_1K_DATA_BUFFER_SIZE - __get_size(ptThis));
+                        this.chState = SEND_PACK_DATA;
+                        return fsm_ym_cpl;
                     } else {
-                        /* Call the callback to fill buffer with next part of data */
-                        if(__file_data(ptThis, __get_buffer_addr(ptThis), __get_size_addr(ptThis))) {
-                            /* Prepare and process file data for transmission */
-                            if(__get_size(ptThis) == 0) {
-                                /* No data left to send, prepare to send EOT (End Of Transmission) */
-                                this.chState = SEND_EOT1;
-                            } else if(__get_size(ptThis) <= MODEM_DATA_BUFFER_SIZE) {
-                                /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
-                                memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_DATA_BUFFER_SIZE - __get_size(ptThis));
-                                this.chState = SEND_PACK_DATA;
-                                break;
-                            } else if(__get_size(ptThis) <= MODEM_1K_DATA_BUFFER_SIZE) {
-                                /* If hwSize is less than 1K buffer size, pad as well */
-                                memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_1K_DATA_BUFFER_SIZE - __get_size(ptThis));
-                                this.chState = SEND_PACK_DATA;
-                                break;
-                            } else {
-                                /* hwSize too large, reset state machine and return error */
-                                ymodem_transfer_completed(ptThis, false);
-                                YMODEM_SEND_RESET_FSM();
-                                return PACKET_FAIL;
-                            }
-                        } else {
-                            /* Callback failed, reset FSM and return error */
-                            ymodem_transfer_completed(ptThis, false);
-                            YMODEM_SEND_RESET_FSM();
-                            return PACKET_FAIL;
-                        }
+                        /* hwSize too large, reset state machine and return error */
+                        PRINT_ERROR("incorrect size");
+                        ymodem_transfer_state(ptThis, PACKET_INCORRECT_SIZE);
+                        YMODEM_RECEIVE_RESET_FSM();
+                        return fsm_ym_err;
                     }
                 } else if (this.chByte == NAK) {
                     /* Received NAK, packet transmission failed, retry */
@@ -999,32 +984,33 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
 
                     if(this.chTryCount > MODEM_MAX_TRY_AGAN) {
                         /* Max retries reached, reset FSM and return error */
-                        ymodem_transfer_completed(ptThis, false);
-                        YMODEM_SEND_RESET_FSM();
-                        return PACKET_FAIL;
+                        PRINT_ERROR("try count max");
+                        ymodem_transfer_state(ptThis, PACKET_CAN);
+                        YMODEM_RECEIVE_RESET_FSM();
+                        return fsm_ym_err;
                     } else {
                         /* Retry sending the last packet */
                         this.chState = SEND_PACK_DATA;
-                        break;
+                        return fsm_ym_cpl;
                     }
                 } else if(this.chByte == CAN) {
                     /* Received CAN, transmission cancelled, reset FSM and return error */
-                    ymodem_transfer_completed(ptThis, false);
+                    PRINT_ERROR("Received CAN");
+                    ymodem_transfer_state(ptThis, PACKET_CAN);
                     YMODEM_SEND_RESET_FSM();
-                    return PACKET_FAIL;
+                    return fsm_ym_err;
                 } else {
                     /* Received an unexpected response, stay in the current state */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* Timed out waiting for receiver's response, reset FSM and return error */
-                ymodem_transfer_completed(ptThis, false);
-                YMODEM_SEND_RESET_FSM();
-                return PACKET_TIMEOUT;
-            } else {
-                /* Other error in reading, stay in the current state */
-                break;
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
+                YMODEM_RECEIVE_RESET_FSM();
+                return fsm_ym_req_timeout;
             }
+            break;
         }
 
         /**
@@ -1038,10 +1024,8 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
             if(__ymodem_write_data(ptThis, &this.chByte, 1)) {
                 /* EOT sent, proceed to the next state to await NAK from receiver */
                 this.chState = RECEIVE_NAK;
-            } else {
-                /* If unable to send EOT, maintain state to try again */
-                break;
             }
+            break;
         }
 
         /**
@@ -1059,17 +1043,16 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                     this.chState = SEND_EOT2;
                 } else {
                     /* If the response is not NAK, remain in this state and retry */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* Timeout waiting for NAK, reset FSM to handle error */
-                ymodem_transfer_completed(ptThis, false);
-                YMODEM_SEND_RESET_FSM();
-                return PACKET_TIMEOUT;
-            } else {
-                /* Reading still in progress or other error, stay in state */
-                break;
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
+                YMODEM_RECEIVE_RESET_FSM();
+                return fsm_ym_req_timeout;
             }
+            break;
         }
 
         /**
@@ -1083,10 +1066,8 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
             if(__ymodem_write_data(ptThis, &this.chByte, 1)) {
                 /* EOT sent again, now await for final acknowledgment with ACK */
                 this.chState = RECEIVE_ACK2;
-            } else {
-                /* If EOT fails to send, remain in this state for another attempt */
-                break;
             }
+            break;
         }
 
         /**
@@ -1101,16 +1082,17 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                 if(this.chByte == ACK) {
                     /* Final ACK received, transmission successfully terminated */
                     YMODEM_SEND_RESET_FSM(); // Reset the FSM for next transaction
-                    return PACKET_ON_GOING; // Return completion status
+                    return fsm_ym_on_going; // Return completion status
                 } else {
                     /* If the response is not ACK, remain in this state and wait */
-                    break;
+                    return fsm_ym_req_drop;
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* Timeout waiting for ACK, reset FSM to handle error */
-                ymodem_transfer_completed(ptThis, false);
-                YMODEM_SEND_RESET_FSM();
-                return PACKET_TIMEOUT;
+                PRINT_ERROR("read timeout");
+                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
+                YMODEM_RECEIVE_RESET_FSM();
+                return fsm_ym_req_timeout;
             } else {
                 /* Reading still in progress or other error, stay in state */
                 break;
@@ -1118,7 +1100,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
         }
     }
 
-    return PACKET_ON_GOING;
+    return fsm_ym_on_going;
 }
 /**
  * Initializes the ymodem_t structure with the required callbacks and buffer.
@@ -1135,19 +1117,17 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
  * callbacks and buffer to the ymodem_t structure's operations component (tOps),
  * preparing the ymodem session for use with specific file transfer operations.
  */
-bool ymodem_init(ymodem_t *ptThis, ymodem_ops_t *ptOps)
+void ymodem_init(ymodem_t *ptThis, ymodem_ops_t *ptOps)
 {
     /* Validate all the input pointers to ensure they are not NULL. */
     if (NULL == ptThis || NULL == ptOps) {
         /* If any pointer is NULL, the initialization cannot proceed, return false. */
-        return false;
+        return ;
     }
 
     this.chState = 0;
     /* Assign the provided callback functions to the operations member of the ymodem structure. */
-		memcpy(&this.tOps,ptOps,sizeof(this.tOps));
-    /* Return true to indicate successful initialization. */
-    return true;
+    memcpy(&this.tOps, ptOps, sizeof(this.tOps));
 }
 
 

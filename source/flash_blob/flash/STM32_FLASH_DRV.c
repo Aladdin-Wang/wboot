@@ -1,4 +1,4 @@
-#include "../wl_flash_blob.h"
+#include "../flash_blob.h"
 #include "STM32_FLASH_DEV.c"
 
 #if defined(STM32F103xB)||defined(STM32F103xE) || defined(STM32F105xC)
@@ -158,10 +158,12 @@ static u32 GetFlashBankNum(u32 adr)
     #define M16(adr) (*((vu16 *) (adr)))
     #define M32(adr) (*((vu32 *) (adr)))
     // Flash Keys
+#if !defined  (USE_HAL_DRIVER)		
     #define FLASH_KEY1      0x45670123
     #define FLASH_KEY2      0xCDEF89AB
     #define FLASH_OPTKEY1   0x08192A3B
     #define FLASH_OPTKEY2   0x4C5D6E7F
+#endif
 
     // Flash Control Register definitions
     #define FLASH_PG                ((unsigned int)0x00000001)

@@ -26,6 +26,62 @@
 
 static void shell_push_history(wl_shell_t *ptObj);
 
+__attribute__((weak))
+int64_t get_system_time_ms(void)
+{
+    static int64_t wTimeCount = 0;
+    wTimeCount ++;
+    return wTimeCount;
+}
+
+
+//static ymodem_state_t shell_read_data_with_timeout(ymodem_read_timeout_t *ptThis, ymodem_t *ptObj, uint8_t* pchByte, uint16_t hwSize, uint16_t hwTimeout)
+//{
+//    /* Macro to reset the finite state machine (FSM) */
+//#define YMODEM_READ_DATA_TIMEOUT_RESET_FSM() do { this.chState = 0; } while(0)
+
+//    /* Enum defining FSM states for receiving a Ymodem packet */
+//    enum { START, READ_DOING, IS_TIMEOUT, RESET_TIME};
+
+//    /* Processing states using a switch-case statement */
+//    switch(this.chState) {
+//        case START: {
+//            this.hwIndex = 0;
+//            this.hwRemainSize = hwSize;
+//            this.lTimeCountms = hwTimeout + get_system_time_ms();
+//            /* Begin the process of reading a new packet by transitioning to the data state. */
+//            this.chState = READ_DOING;
+//        }
+
+//        case READ_DOING: {
+//            uint16_t hwReadLen  = __ymodem_read_data_timeout(ptObj, (pchByte + this.hwIndex), this.hwRemainSize);
+
+//            if(hwReadLen == this.hwRemainSize) {
+//                YMODEM_READ_DATA_TIMEOUT_RESET_FSM();
+//                return PACKET_CPL;
+//            } else if(hwReadLen > 0) {
+//                this.hwIndex += hwReadLen;
+//                this.hwRemainSize = this.hwRemainSize - hwReadLen;
+//            }
+
+//            this.chState = IS_TIMEOUT;
+//        }
+
+//        case IS_TIMEOUT: {
+//            if(get_system_time_ms() >= this.lTimeCountms) {
+//                YMODEM_READ_DATA_TIMEOUT_RESET_FSM();
+//                return PACKET_TIMEOUT;
+//            }
+
+//            this.chState = READ_DOING;
+//            break;
+//        }
+//    }
+
+//    /* Return the ongoing status if the packet isn't yet fully processed or an error hasn't occurred. */
+//    return PACKET_ON_GOING;
+//}
+
 /**
  * @brief Read input from the shell
  *
@@ -113,7 +169,6 @@ void  wl_shell_read(wl_shell_t *ptObj, uint8_t *pchData, uint16_t hwLength)
                 shell_push_history(ptObj);
                 this.chLineBuf[this.hwLinePosition++] = pchData[i];
                 enqueue(&this.tByteInQueue, this.chLineBuf, this.hwLinePosition );
-                publish(&ptObj->tShellSubPub, __MSG_TOPIC(shell_topic));
             }
 
             memset(this.chLineBuf, 0, sizeof(this.chLineBuf));
@@ -135,7 +190,7 @@ void  wl_shell_read(wl_shell_t *ptObj, uint8_t *pchData, uint16_t hwLength)
     }
 
     if(this.bEchoMode != false) {
-        publish(&ptObj->tShellSubPub, __MSG_TOPIC(echo_topic), pchData, hwLength);
+
     }
 }
 
@@ -226,10 +281,27 @@ void wl_shell_echo(wl_shell_t *ptObj, uint8_t *pchData, uint16_t hwLength)
  */
 void wl_shell_exec(wl_shell_t *ptObj)
 {
+	  uint8_t chByte;
     wl_shell_t *(ptThis) = ptObj;
     assert(NULL != ptObj);
 
-    while(call_fsm( search_msg_map,  &this.fsmSearchMsgMap ) != fsm_rt_cpl);
+    fsm_rt_t tFsm = call_fsm( search_msg_map,  &this.fsmSearchMsgMap );
+	  if(fsm_rt_cpl == tFsm) {
+        get_all_peeked(&this.tByteInQueue);
+    }
+
+    if(fsm_rt_user_req_drop == tFsm) {
+        dequeue(&this.tByteInQueue, &chByte);
+    }
+
+    if(fsm_rt_on_going == tFsm) {
+        reset_peek(&this.tByteInQueue);
+    }
+}
+
+static bool get_byte (get_byte_t *ptThis, uint8_t *pchByte, uint16_t hwLength)
+{
+    return peek_queue(ptThis->pTarget, pchByte, hwLength);
 }
 
 /**
@@ -245,10 +317,12 @@ wl_shell_t *wl_shell_init(wl_shell_t *ptObj)
 
     this.bEchoMode = SHELL_OPTION_ECHO;
     queue_init(&this.tByteInQueue, this.chQueueBuf, sizeof(this.chQueueBuf), true);
+    this.tGetByte.pTarget = (void *)(&this.tByteInQueue);
+    this.tGetByte.fnGetByte = get_byte;	
 #ifdef __ARMCC_VERSION
     extern const int FSymTab$$Base;
     extern const int FSymTab$$Limit;
-    init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)&FSymTab$$Base, (msg_t *)&FSymTab$$Limit, &this.tByteInQueue, true));
+    init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)&FSymTab$$Base, (msg_t *)&FSymTab$$Limit, &this.tGetByte, true));
 #elif defined (__GNUC__) || defined(__TI_COMPILER_VERSION__) || defined(__TASKING__)
     /* GNU GCC Compiler and TI CCS */
     extern const int __fsymtab_start;
@@ -271,10 +345,7 @@ wl_shell_t *wl_shell_init(wl_shell_t *ptObj)
     init_fsm(search_msg_map, &this.fsmSearchMsgMap, args((msg_t *)ptr_begin, (msg_t *)ptr_end, &this.tByteInQueue, true));
 #endif
 
-    wl_subscribe_publish_init(&ptObj->tShellSubPub);
-    subscribe(&ptObj->tShellSubPub, __MSG_TOPIC(shell_topic), &this, SLOT(wl_shell_exec));
-    subscribe(&ptObj->tShellSubPub, __MSG_TOPIC(echo_topic), &this, SLOT(wl_shell_echo));
-		
+
 		printf("\r\nkk@shell >");
 		
     return ptObj;
@@ -376,5 +447,6 @@ static int msh_help(int argc, char **argv)
     return 0;
 }
 MSH_FUNCTION_EXPORT_CMD(msh_help, help, shell help);
+
 
 #endif

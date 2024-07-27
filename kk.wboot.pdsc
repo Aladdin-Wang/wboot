@@ -17,6 +17,9 @@
   <repository type="git">https://github.com/Aladdin-Wang/wboot.git</repository>
 
 <releases>
+    <release date="2024-07-27" version="0.9.5" tag="v0.9.5" >
+      - updates
+    </release>
     <release date="2024-06-07" version="0.9.4" tag="v0.9.4" >
       - updates
     </release>    
@@ -40,36 +43,26 @@
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
 		  <require Cclass="BootServe" Cgroup="wboot" Csub="FlashDrv"/>
-		  <require Cclass="BootServe" Cgroup="wboot" Csub="Core"/>		  
+		  <require Cclass="BootServe" Cgroup="wboot" Csub="Serve"/>		  
 		</condition>
 		
         
     </conditions>  
   <components>
     <!-- signals_slots 组件 -->
-    <component Cclass="BootServe" Cversion="0.9.3" Csub="Core" Cgroup="wboot" >
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="Serve" Cgroup="wboot" >
       <description>Contains components such as queue, shell, ymodem, subscribe_publish, signals_slots.</description>
 		<files>
 			<file category="include" name="source/"/>
-			<file category="header" name="template/wl_user_app_cfg.h" attr="config" version="0.9.3"/>
-			<file category="source" name="source/wl_serve.c" attr="config" version="0.9.3"/>
-			<file category="header" name="source/wl_serve.h" attr="config" version="0.9.3"/>
-  
-			<file category="sourceC" name="source/generic/queue/wl_queue.c"/>    
-			<file category="sourceC" name="source/check_agent_engine/wl_check_agent_engine.c"/>        
-			<file category="sourceC" name="source/communication/shell/msg_map/wl_msg_check_arg.c"/>
-			<file category="sourceC" name="source/communication/shell/msg_map/wl_msg_check_str.c"/>
-			<file category="sourceC" name="source/communication/shell/msg_map/wl_msg_map.c"/>
-			<file category="sourceC" name="source/communication/shell/signals_slots/wl_signals_slots.c"/>
-			<file category="sourceC" name="source/communication/shell/subscribe_publish/wl_subscribe_publish.c"/>
-			<file category="sourceC" name="source/communication/shell/wl_shell.c"/>    
-			<file category="sourceC" name="source/communication/ymodem/wl_ymodem.c"/>        
+			<file category="header" name="template/wl_user_app_cfg.h" attr="config" version="0.9.4"/>
+			<file category="source" name="source/wl_serve.c" attr="config" version="0.9.4"/>
+			<file category="header" name="source/wl_serve.h" attr="config" version="0.9.4"/>
 		</files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
          </Pre_Include_Global_h>
     </component>
-    <component Cclass="BootServe" Cversion="0.9.3" Csub="FlashDrv" Cgroup="wboot" Cvariant="STM32"  condition="FlashDrv">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="wboot" Cvariant="STM32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
@@ -77,7 +70,7 @@
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DRV.c"/> 
         </files>
     </component>
-    <component Cclass="BootServe" Cversion="0.9.3" Csub="FlashDrv" Cgroup="wboot" Cvariant="GD32"  condition="FlashDrv">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="wboot" Cvariant="GD32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
@@ -85,14 +78,54 @@
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DRV.c"/> 
         </files>
     </component>	
-    <component Cclass="BootServe" Cversion="0.9.3" Csub="Bootloader" Cgroup="wboot" condition="Bootloader">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem" Cgroup="wboot" condition="ymodem">
+        <description>wboot ymodem</description>
+        <files>
+            <file category="sourceC" name="source/communication/ymodem/wl_ymodem.c"/>  
+        </files>
+    </component>	
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="queue" Cgroup="wboot" condition="queue">
+        <description>wboot queue</description>
+        <files>
+            <file category="sourceC" name="source/generic/queue/wl_queue.c"/>  
+        </files>
+    </component>
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="signals_slots" Cgroup="wboot" condition="signals_slots">
+        <description>wboot signals_slots</description>
+        <files>
+            <file category="sourceC" name="source/communication/signals_slots/wl_signals_slots.c"/> 
+        </files>
+    </component>	
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="shell" Cgroup="wboot" condition="shell">
+        <description>wboot shell</description>
+        <files>
+            <file category="sourceC" name="source/communication/shell/wl_shell.c"/> 
+			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_arg.c"/>
+			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_str.c"/>
+			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
+        </files>
+    </component>	
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="subscribe_publish" Cgroup="wboot" condition="subscribe_publish">
+        <description>wboot subscribe_publish</description>
+        <files>
+            <file category="sourceC" name="source/communication/subscribe_publish/wl_subscribe_publish.c"/>
+			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_arg.c"/>
+			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_str.c"/>
+			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
+        </files>
+    </component>		
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="Bootloader" Cgroup="wboot" condition="Bootloader">
         <description>wboot bootloader</description>
         <files>
             <file category="sourceC" name="source/bootloader/bootloader.c"/>
-			<file category="sourceC" name="source/communication/ymodem/wl_ymodem_ota.c"/>
         </files>
     </component>	
-	
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="check_agent_engine" Cgroup="wboot" condition="check_agent_engine">
+        <description>wboot check_agent_engine</description>
+        <files>
+            <file category="sourceC" name="source/check_agent_engine/wl_check_agent_engine.c"/> 
+        </files>
+    </component>	
   </components>
 
   <!-- optional taxonomy section for defining new component Class and Group names -->

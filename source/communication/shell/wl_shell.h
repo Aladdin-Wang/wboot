@@ -19,7 +19,9 @@
 #define __SERVE_SHELL_H_
 #include "./app_cfg.h"
 #if defined(WL_USING_SHELL)
-#include "./subscribe_publish/wl_subscribe_publish.h"
+#include "../msg_map/wl_msg_map.h"
+#include "../signals_slots/wl_signals_slots.h"
+#include "../../generic/queue/wl_queue.h"
 
 /**
  * @ingroup msh
@@ -36,16 +38,18 @@
           __fsym_##cmd##_name,    \
           (msg_hanlder_t *)&name, \
           __fsym_##cmd##_desc,    \
-    };
+    };                            \
+		COMPILER_ASSERT((IS_FUNCTION_POINTER(name)));
 
 #define MSH_CMD_EXPORT(command, desc)   \
     MSH_FUNCTION_EXPORT_CMD(command, command, desc)
 
 
+
 typedef struct wl_shell_t {
-	  wl_subscribe_publish_t    tShellSubPub;
     fsm(search_msg_map)       fsmSearchMsgMap;
     byte_queue_t              tByteInQueue;
+    get_byte_t                tGetByte;
     char                      chQueueBuf[MSG_ARG_LEN];
     char                      chLineBuf[MSG_ARG_LEN];
     bool                      bEchoMode;
