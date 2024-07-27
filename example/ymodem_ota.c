@@ -1,5 +1,4 @@
 #include "ymodem_ota.h"
-
 #include <assert.h>
 
 #undef this

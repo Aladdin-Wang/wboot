@@ -38,6 +38,7 @@
 		</condition> 
 		<condition id="ymodem">
 		  <description>wboot ymodem</description>
+		  <require Cclass="BootServe" Cgroup="components" Csub="ymodem"/>
 		</condition> 
 		<condition id="ymodem_ota">
 		  <description>wboot ymodem_ota</description>
