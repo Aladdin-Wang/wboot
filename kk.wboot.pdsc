@@ -41,7 +41,9 @@
 		</condition> 
 		<condition id="ymodem_ota">
 		  <description>wboot ymodem_ota</description>
-		  <require Cclass="BootServe" Cgroup="wboot" Csub="ymodem"/>
+		  <require Cclass="BootServe" Cgroup="components" Csub="ymodem"/>
+		  <require Cclass="BootServe" Cgroup="components" Csub="signals_slots"/>
+		  <require Cclass="BootServe" Cgroup="components" Csub="Bootloader"/>
 		</condition> 	
 		<condition id="queue">
 		  <description>wboot queue</description>
@@ -60,15 +62,15 @@
 		</condition> 		
 		<condition id="Bootloader">
 		  <description>wboot bootloader</description>
-		  <require Cclass="BootServe" Cgroup="wboot" Csub="FlashDrv"/>
-		  <require Cclass="BootServe" Cgroup="wboot" Csub="Serve"/>		  
+		  <require Cclass="BootServe" Cgroup="components" Csub="FlashDrv"/>
+		  <require Cclass="BootServe" Cgroup="components" Csub="Serve"/>		  
 		</condition>
 		
         
     </conditions>  
   <components>
     <!-- signals_slots 组件 -->
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="Serve" Cgroup="wboot" >
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="Serve" Cgroup="components" >
       <description>Contains components such as queue, shell, ymodem, subscribe_publish, signals_slots.</description>
 		<files>
 			<file category="include" name="source/"/>
@@ -80,7 +82,7 @@
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
          </Pre_Include_Global_h>
     </component>
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="wboot" Cvariant="STM32"  condition="FlashDrv">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="components" Cvariant="STM32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
@@ -88,7 +90,7 @@
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DRV.c"/> 
         </files>
     </component>
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="wboot" Cvariant="GD32"  condition="FlashDrv">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="components" Cvariant="GD32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
@@ -96,25 +98,25 @@
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DRV.c"/> 
         </files>
     </component>	
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem" Cgroup="wboot" condition="ymodem">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem" Cgroup="components" condition="ymodem">
         <description>wboot ymodem</description>
         <files>
             <file category="sourceC" name="source/communication/ymodem/wl_ymodem.c"/>  
         </files>
     </component>	
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="queue" Cgroup="wboot" condition="queue">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="queue" Cgroup="components" condition="queue">
         <description>wboot queue</description>
         <files>
             <file category="sourceC" name="source/generic/queue/wl_queue.c"/>  
         </files>
     </component>
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="signals_slots" Cgroup="wboot" condition="signals_slots">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="signals_slots" Cgroup="components" condition="signals_slots">
         <description>wboot signals_slots</description>
         <files>
             <file category="sourceC" name="source/communication/signals_slots/wl_signals_slots.c"/> 
         </files>
     </component>	
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="shell" Cgroup="wboot" condition="shell">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="shell" Cgroup="components" condition="shell">
         <description>wboot shell</description>
         <files>
             <file category="sourceC" name="source/communication/shell/wl_shell.c"/> 
@@ -123,7 +125,7 @@
 			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
         </files>
     </component>	
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="subscribe_publish" Cgroup="wboot" condition="subscribe_publish">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="subscribe_publish" Cgroup="components" condition="subscribe_publish">
         <description>wboot subscribe_publish</description>
         <files>
             <file category="sourceC" name="source/communication/subscribe_publish/wl_subscribe_publish.c"/>
@@ -132,23 +134,35 @@
 			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
         </files>
     </component>		
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="Bootloader" Cgroup="wboot" condition="Bootloader">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="Bootloader" Cgroup="components" condition="Bootloader">
         <description>wboot bootloader</description>
         <files>
             <file category="sourceC" name="source/bootloader/bootloader.c"/>
         </files>
     </component>	
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="check_agent_engine" Cgroup="wboot" condition="check_agent_engine">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="check_agent_engine" Cgroup="components" condition="check_agent_engine">
         <description>wboot check_agent_engine</description>
         <files>
             <file category="sourceC" name="source/check_agent_engine/wl_check_agent_engine.c"/> 
         </files>
     </component>	
 	
-    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_ota" Cgroup="example" condition="ymodem_ota">
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_ota" Cgroup="example" condition="ymodem">
         <description>wboot check_agent_engine</description>
         <files>
             <file category="source" name="example/ymodem_ota.c" attr="config" version="0.9.4"/>
+        </files>
+    </component>
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_receive" Cgroup="example" condition="ymodem">
+        <description>wboot check_agent_engine</description>
+        <files>
+            <file category="source" name="example/ymodem_receive.c" attr="config" version="0.9.4"/>
+        </files>
+    </component>
+    <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_send" Cgroup="example" condition="ymodem">
+        <description>wboot check_agent_engine</description>
+        <files>
+            <file category="source" name="example/ymodem_send.c" attr="config" version="0.9.4"/>
         </files>
     </component>	
   </components>

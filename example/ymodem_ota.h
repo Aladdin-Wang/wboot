@@ -14,7 +14,7 @@ typedef struct ymodem_receive_t {
     uint32_t      wFileSize;
     uint32_t      wOffSet;
 	
-	  SIG_SLOT_OBJ;
+    SIG_SLOT_OBJ;
 	
 } ymodem_receive_t;
 
