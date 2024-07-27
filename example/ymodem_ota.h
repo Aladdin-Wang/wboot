@@ -1,10 +1,10 @@
 #ifndef APPLICATIONS_CHECK_AGENT_YMODEM_RECEIVE_H_
 #define APPLICATIONS_CHECK_AGENT_YMODEM_RECEIVE_H_
 #include "wl_ymodem.h"
-#include "../intelhex/intelhex.h"
-#include "../signals_slots/wl_signals_slots.h"
-#include "../../check_agent_engine/wl_check_agent_engine.h"
-#include "../../bootloader/bootloader.h"
+#include "intelhex.h"
+#include "wl_signals_slots.h"
+#include "wl_check_agent_engine.h"
+#include "bootloader.h"
 
 typedef struct ymodem_receive_t {
     ymodem_t      parent;
