@@ -4,7 +4,6 @@
 
 typedef struct ymodem_send_t {
     ymodem_t      parent;
-    peek_byte_t   *ptReadByte;
     char          chFileName[32];
     char         *pchFileSize;
     uint32_t      wFileSize;

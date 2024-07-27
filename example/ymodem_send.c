@@ -1,6 +1,7 @@
 #include "ymodem_send.h"
-#include <assert.h>
 #include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #undef this
 #define this        (*ptThis)
@@ -15,7 +16,6 @@ static uint16_t ymodem_send_file_name(ymodem_t *ptObj, uint8_t *pchBuffer, uint1
 
     count1++;
     count2 = 0;
-    *phwSize = 128;
     memset(s_chBuffer, 0, sizeof(s_chBuffer));
 
     if(count1 > 2) {
@@ -34,11 +34,10 @@ static uint16_t ymodem_send_file_data(ymodem_t *ptObj, uint8_t *pchBuffer, uint1
     assert(NULL != ptObj);
 
     count2++;
-    *phwSize = 1024;
 
     if(count2 == (102400 / 1024 + 1)) {
-        *phwSize = 102400 % 1024;
-        memset(pchBuffer, count2 + 0X30, *phwSize);
+        hwSize = 102400 % 1024;
+        memset(pchBuffer, count2 + 0X30, hwSize);
         count2 = 0;
     } else {
         memset(pchBuffer, count2 + 0X30, 1024);
@@ -59,7 +58,7 @@ static uint16_t ymodem_write_data(ymodem_t *ptObj, uint8_t* pchByte, uint16_t hw
     ymodem_send_t *(ptThis) = (ymodem_send_t *)ptObj;
     assert(NULL != ptObj);
 
-    return true;
+    return 0;
 }
 
 

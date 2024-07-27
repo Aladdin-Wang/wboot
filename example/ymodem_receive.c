@@ -1,4 +1,6 @@
 #include "ymodem_receive.h"
+#include <string.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #undef this
@@ -11,9 +13,7 @@ static uint16_t ymodem_recv_file_name(ymodem_t *ptObj, uint8_t *pchBuffer, uint1
 {
     ymodem_receive_t *(ptThis) = (ymodem_receive_t *)ptObj;
     assert(NULL != ptObj);
-
-    ymodem_receive_t *(ptThis) = (ymodem_receive_t *)ptObj;
-    assert(NULL != ptObj);
+	
     this.wOffSet = 0;
     strcpy(this.chFileName, (char *)&pchBuffer[0]);
     this.pchFileSize = (char *)&pchBuffer[strlen(this.chFileName) + 1];
@@ -52,13 +52,14 @@ static uint16_t ymodem_write_data(ymodem_t *ptObj, uint8_t* pchByte, uint16_t hw
     ymodem_receive_t *(ptThis) = (ymodem_receive_t *)ptObj;
     assert(NULL != ptObj);
 
-    return true;
+    return 0;
 }
 
-ymodem_recive_t *ymodem_receive_init(ymodem_receive_t *ptObj)
+ymodem_receive_t *ymodem_receive_init(ymodem_receive_t *ptObj)
 {
+	ymodem_receive_t *(ptThis) = (ymodem_receive_t *)ptObj;
     assert(NULL != ptObj);
-
+	
     ymodem_ops_t s_tOps = {
         .pchBuffer = s_chQueueBuffer,
         .hwSize = sizeof(s_chQueueBuffer),
