@@ -779,6 +779,7 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
          * The state will then transition to RECEIVE_C1 to await synchronization with the receiver.
          */
         case START: {
+            __set_size(ptThis,MODEM_DATA_BUFFER_SIZE);
             /* Set attempt counter to zero */
             this.chTryCount = 0;
             /* Set starting packet number to zero */
@@ -799,7 +800,7 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
             if(PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
                     /* 'C' received, proceed to send packet with file path information */
-                    if(__file_path(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis)) == __get_size(ptThis)) {
+                    if(__file_path(ptThis, __get_buffer_addr(ptThis), MODEM_DATA_BUFFER_SIZE) == MODEM_DATA_BUFFER_SIZE) {
                         this.chState = SEND_PACK_PATH;
                     } else {
                         /* File path retrieval failed, reset state machine */
@@ -814,8 +815,6 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
                 }
             } else if(PACKET_TIMEOUT == tFsm) {
                 /* ACK waiting period timed out; reset state machine */
-                PRINT_ERROR("read timeout");
-                ymodem_transfer_state(ptThis, PACKET_TIMEOUT);
                 YMODEM_RECEIVE_RESET_FSM();
                 return fsm_ym_req_timeout;
             } else {
@@ -892,11 +891,13 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
 
                     /* Prepare and process file data for transmission */
                     if(hwNextPartData <= MODEM_DATA_BUFFER_SIZE) {
-                        /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
-                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_DATA_BUFFER_SIZE - __get_size(ptThis));
+                        /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */	
+                        __set_size(ptThis,MODEM_DATA_BUFFER_SIZE);											
+                        memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_DATA_BUFFER_SIZE - hwNextPartData);
                     } else if(hwNextPartData <= MODEM_1K_DATA_BUFFER_SIZE) {
                         /* If hwSize is less than 1K buffer size, pad as well */
-                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_1K_DATA_BUFFER_SIZE - __get_size(ptThis));
+                        __set_size(ptThis,MODEM_1K_DATA_BUFFER_SIZE);	
+                        memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_1K_DATA_BUFFER_SIZE - hwNextPartData);
                     } else {
                         /* hwSize too large, reset state machine and return error */
                         PRINT_ERROR("incorrect size");
