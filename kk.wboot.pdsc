@@ -161,25 +161,23 @@
         <files>
 		    <file category="include" name="example/ymodem/intelhex/"/>
 			<file category="include" name="example/ymodem/"/>
-            <file category="source" name="example/ymodem/ymodem_ota.c" attr="config" version="0.9.4"/>
-			<file category="source" name="example/ymodem/ymodem_ota.h" attr="config" version="0.9.4"/>
+            <file category="sourceC" name="example/ymodem/ymodem_ota.c" attr="config" version="0.9.4"/>
+			<file category="sourceC" name="example/ymodem/ymodem_ota.h" attr="config" version="0.9.4"/>
 			<file category="sourceC" name="example/ymodem/intelhex/intelhex.c"/>
         </files>
     </component>
     <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_receive" Cgroup="example" condition="ymodem">
         <description>wboot check_agent_engine</description>
         <files>
-		    <file category="include" name="example/ymodem/"/>
-            <file category="source" name="example/ymodem/ymodem_receive.c" attr="config" version="0.9.4"/>
-			<file category="source" name="example/ymodem/ymodem_receive.h" attr="config" version="0.9.4"/>
+            <file category="sourceC" name="example/ymodem/ymodem_receive.c" attr="config" version="0.9.4"/>
+			<file category="header" name="example/ymodem/ymodem_receive.h" attr="config" version="0.9.4"/>
         </files>
     </component>
     <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem_send" Cgroup="example" condition="ymodem">
         <description>wboot check_agent_engine</description>
         <files>
-		    <file category="include" name="example/ymodem/"/>
-            <file category="source" name="example/ymodem/ymodem_send.c" attr="config" version="0.9.4"/>
-			<file category="source" name="example/ymodem/ymodem_send.h" attr="config" version="0.9.4"/>
+            <file category="sourceC" name="example/ymodem/ymodem_send.c" attr="config" version="0.9.4"/>
+			<file category="header" name="example/ymodem/ymodem_send.h" attr="config" version="0.9.4"/>
         </files>
     </component>	
   </components>
