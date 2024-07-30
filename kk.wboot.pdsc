@@ -77,6 +77,7 @@
 		<files>
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" attr="config" version="0.9.4"/>
+			<file category="sourceC" name="template/no_semihosting.c"/>   
 		</files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"

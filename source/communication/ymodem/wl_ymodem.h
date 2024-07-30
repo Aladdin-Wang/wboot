@@ -76,6 +76,7 @@ typedef struct ymodem_package_t {
     uint8_t chNBlk; /* Complement of the block number */
     uint8_t chCheck[2]; /* Checksum/CRC bytes */
     uint16_t hwCheck; /* Calculated checksum/CRC value */
+	  uint16_t hwWriteLen;
 } ymodem_package_t;
 
 /* Struct for handling the YMODEM protocol interaction */

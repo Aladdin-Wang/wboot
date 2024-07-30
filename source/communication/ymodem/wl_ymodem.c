@@ -562,7 +562,7 @@ fsm_ym_t ymodem_receive(ymodem_t *ptThis)
                 }else {
                     /* For other responses, continue by trying to receive the next data packet. */
                     this.chState = RECEIVE_PACK_DATA;
-                    return fsm_ym_cpl;
+                    break;
                 }
             }
         }
@@ -655,6 +655,7 @@ static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, ymodem_t *pt
             }
 
             /* Transition to the state of sending the packet header. */
+						this.hwWriteLen = 0;
             this.chState = SEND_HEAD;
         }
 
@@ -697,8 +698,9 @@ static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, ymodem_t *pt
 
         case SEND_DATA: {
             /* Send the payload data to the receiver. */
-            if(__ymodem_write_data(ptObj, __get_buffer_addr(ptObj),
-                                   ((__get_size(ptObj) <= MODEM_DATA_BUFFER_SIZE) ? MODEM_DATA_BUFFER_SIZE : MODEM_1K_DATA_BUFFER_SIZE))) {
+					  this.hwWriteLen += __ymodem_write_data(ptObj, __get_buffer_addr(ptObj) + this.hwWriteLen
+							         ,__get_size(ptObj) - this.hwWriteLen);
+            if( this.hwWriteLen >=__get_size(ptObj )) {
                 /* If the data is successfully sent, proceed to send the first byte of the CRC. */
                 this.chState = SEND_CHECK_L;
             } else {
@@ -800,9 +802,13 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
             if(PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
                     /* 'C' received, proceed to send packet with file path information */
-                    if(__file_path(ptThis, __get_buffer_addr(ptThis), MODEM_DATA_BUFFER_SIZE) == MODEM_DATA_BUFFER_SIZE) {
+									  uint16_t hwFileData = __file_path(ptThis, __get_buffer_addr(ptThis), MODEM_DATA_BUFFER_SIZE);
+                    if( hwFileData == MODEM_DATA_BUFFER_SIZE) {
                         this.chState = SEND_PACK_PATH;
-                    } else {
+                    } else if(hwFileData == 0){
+											  memset(__get_buffer_addr(ptThis),0,MODEM_DATA_BUFFER_SIZE);
+											  this.chState = SEND_PACK_PATH;									  
+										}else {
                         /* File path retrieval failed, reset state machine */
                         PRINT_ERROR("incorrect size");
                         ymodem_transfer_state(ptThis, PACKET_INCORRECT_SIZE);
@@ -813,11 +819,7 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
                     /* Non-C character received; remain in current state */
                     return fsm_ym_req_drop;
                 }
-            } else if(PACKET_TIMEOUT == tFsm) {
-                /* ACK waiting period timed out; reset state machine */
-                YMODEM_RECEIVE_RESET_FSM();
-                return fsm_ym_req_timeout;
-            } else {
+            }else {
                 /* Read in progress or other error; remain in current state */
                 break;
             }
@@ -964,14 +966,16 @@ fsm_ym_t ymodem_send(ymodem_t *ptThis)
                         this.chState = SEND_EOT1;
                     } else if(hwNextPartData <= MODEM_DATA_BUFFER_SIZE) {
                         /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
-                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_DATA_BUFFER_SIZE - __get_size(ptThis));
+											  __set_size(ptThis,MODEM_DATA_BUFFER_SIZE);	
+                        memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_DATA_BUFFER_SIZE - hwNextPartData);
                         this.chState = SEND_PACK_DATA;
-                        return fsm_ym_cpl;
+                        break;
                     } else if(hwNextPartData <= MODEM_1K_DATA_BUFFER_SIZE) {
                         /* If hwSize is less than 1K buffer size, pad as well */
-                        memset(__get_buffer_addr(ptThis) + __get_size(ptThis), 0x1A, MODEM_1K_DATA_BUFFER_SIZE - __get_size(ptThis));
+											  __set_size(ptThis,MODEM_1K_DATA_BUFFER_SIZE);	
+                        memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_1K_DATA_BUFFER_SIZE - hwNextPartData);
                         this.chState = SEND_PACK_DATA;
-                        return fsm_ym_cpl;
+                        break;
                     } else {
                         /* hwSize too large, reset state machine and return error */
                         PRINT_ERROR("incorrect size");
