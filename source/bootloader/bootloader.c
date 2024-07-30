@@ -194,7 +194,6 @@ __attribute__((constructor))
 static void enter_application(void)
 {
     do {
-			  target_flash_init(APP_PART_ADDR);
         // Read the magic values from flash memory to determine the next action
         target_flash_read((APP_PART_ADDR + APP_PART_SIZE - 3 * MARK_SIZE), chBootMagic[0], 3 * MARK_SIZE);
 
@@ -219,7 +218,6 @@ static void enter_application(void)
         if (((*(volatile uint32_t *)APP_PART_ADDR) & 0x20000000) != 0x20000000) {
             break;
         }
-        target_flash_uninit(APP_PART_ADDR);
         // If all checks are passed, modify the stack pointer and start the application
         modify_stack_pointer_and_start_app(*(volatile uint32_t *)APP_PART_ADDR,
                                            (*(volatile uint32_t *)(APP_PART_ADDR + 4)));

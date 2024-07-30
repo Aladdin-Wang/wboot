@@ -18,10 +18,10 @@ typedef struct ymodem_receive_t {
 	
 } ymodem_receive_t;
 
-typedef struct check_agent_ymodem_recive_t {
+typedef struct ymodem_ota_recive_t {
     check_agent_t tCheckAgent;
     ymodem_receive_t tYmodemReceive;
-} check_agent_ymodem_recive_t;
+} ymodem_ota_recive_t;
 
 signals(ymodem_rec_sig, ymodem_receive_t *ptThis,
         args(
@@ -30,5 +30,5 @@ signals(ymodem_rec_sig, ymodem_receive_t *ptThis,
         ));
 
 extern
-check_agent_ymodem_recive_t *check_agent_ymodem_receive_init(check_agent_ymodem_recive_t *ptObj, peek_byte_t *ptReadByte);
+ymodem_ota_recive_t *ymodem_ota_receive_init(ymodem_ota_recive_t *ptObj, peek_byte_t *ptReadByte);
 #endif /* APPLICATIONS_CHECK_AGENT_XMODEM_H_ */

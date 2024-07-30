@@ -30,13 +30,14 @@ static uint16_t ymodem_recv_file_name(ymodem_t *ptObj, uint8_t *pchBuffer, uint1
         printf("file size outrange flash size. \r\n");
         return 0;
     }
-
+    target_flash_init(APP_PART_ADDR);
     uint32_t wEraseSize = target_flash_erase(APP_PART_ADDR, this.wFileSize);
 
     if( wEraseSize < this.wFileSize) {
         printf("target flash erase error. \r\n");
         return 0;
     }
+
     printf("flash erase success:%d \r\n", wEraseSize);
     begin_download();
     return hwSize;
@@ -80,9 +81,10 @@ static uint16_t ymodem_recv_file_data(ymodem_t *ptObj, uint8_t *pchBuffer, uint1
 
     if(this.wOffSet == this.wFileSize) {
         finalize_download();
+			  target_flash_uninit(APP_PART_ADDR);
         printf("Download firmware to flash success.\n");
     }
-
+    
     return hwSize;
 }
 
@@ -106,12 +108,25 @@ static uint16_t ymodem_write_data(ymodem_t *ptObj, uint8_t* pchByte, uint16_t hw
     return hwSize;
 }
 
-check_agent_ymodem_recive_t *check_agent_ymodem_receive_init(check_agent_ymodem_recive_t *ptObj, peek_byte_t *ptReadByte)
+fsm_rt_t ymodem_ota_receive(ymodem_t *ptObj)
 {
-    check_agent_ymodem_recive_t *(ptThis) = ptObj;
+    ymodem_state_t tState = ymodem_receive(ptObj);
+
+    if(tState == STATE_ON_GOING) {
+        return fsm_rt_on_going;
+    } else if(tState == STATE_INCORRECT_NBlk || tState == STATE_INCORRECT_CHAR ) {
+        return fsm_rt_user_req_drop;
+    } else {
+        return fsm_rt_cpl;
+    }
+}
+
+ymodem_ota_recive_t *ymodem_ota_receive_init(ymodem_ota_recive_t *ptObj, peek_byte_t *ptReadByte)
+{
+    ymodem_ota_recive_t *(ptThis) = ptObj;
     assert(NULL != ptObj);
     this.tCheckAgent.pAgent = &this.tYmodemReceive.parent;
-    this.tCheckAgent.fnCheck = (check_hanlder_t *)ymodem_receive;
+    this.tCheckAgent.fnCheck = (check_hanlder_t *)ymodem_ota_receive;
     this.tCheckAgent.ptNext = NULL;
     this.tCheckAgent.hwPeekStatus = 0;
     this.tCheckAgent.bIsKeepingContext = true;

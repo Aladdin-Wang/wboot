@@ -111,7 +111,7 @@ uint16_t ymodem_crc16(unsigned char *q, int len)
 #endif
 
 __attribute__((weak))
-void ymodem_transfer_state(ymodem_t *ptObj,ymodem_state_t tState)
+void ymodem_transfer_state(ymodem_t *ptObj, ymodem_state_t tState)
 {
 
 
@@ -490,6 +490,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                     break;
 
                 case STATE_PACKET_CPL:
+
                     /* Complete data packet received, calling user callback to handle the data. */
                     if(__file_data(ptThis, __get_buffer_addr(ptThis), __get_size(ptThis)) == __get_size(ptThis)) {
                         /* Data handled successfully, prepare to acknowledge receipt. */
@@ -505,7 +506,8 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                     break;
 
                 case STATE_INCORRECT_CHAR:
-									  return STATE_INCORRECT_CHAR;
+                    return STATE_INCORRECT_CHAR;
+
                 case STATE_INCORRECT_NBlk:
                     return STATE_INCORRECT_NBlk;
 
@@ -560,10 +562,10 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                     ymodem_transfer_state(ptThis, STATE_CAN);
                     YMODEM_RECEIVE_RESET_FSM();
                     return STATE_CAN;
-                }else {
+                } else {
                     /* For other responses, continue by trying to receive the next data packet. */
                     this.chState = RECEIVE_PACK_DATA;
-                    break;
+                    return STATE_PACKET_CPL;
                 }
             }
         }
@@ -573,7 +575,8 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
             if(__ymodem_write_data(ptThis, &this.chByte, 1)) {
                 this.chState = RECIVE_EOT;
             }
-						break;
+
+            break;
         }
 
         case RECIVE_EOT: {
@@ -656,7 +659,7 @@ static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, ymodem_t *pt
             }
 
             /* Transition to the state of sending the packet header. */
-						this.hwWriteLen = 0;
+            this.hwWriteLen = 0;
             this.chState = SEND_HEAD;
         }
 
@@ -699,9 +702,10 @@ static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, ymodem_t *pt
 
         case SEND_DATA: {
             /* Send the payload data to the receiver. */
-					  this.hwWriteLen += __ymodem_write_data(ptObj, __get_buffer_addr(ptObj) + this.hwWriteLen
-							         ,__get_size(ptObj) - this.hwWriteLen);
-            if( this.hwWriteLen >=__get_size(ptObj )) {
+            this.hwWriteLen += __ymodem_write_data(ptObj, __get_buffer_addr(ptObj) + this.hwWriteLen
+                                                   , __get_size(ptObj) - this.hwWriteLen);
+
+            if( this.hwWriteLen >= __get_size(ptObj )) {
                 /* If the data is successfully sent, proceed to send the first byte of the CRC. */
                 this.chState = SEND_CHECK_L;
             } else {
@@ -782,7 +786,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          * The state will then transition to RECEIVE_C1 to await synchronization with the receiver.
          */
         case START: {
-            __set_size(ptThis,MODEM_DATA_BUFFER_SIZE);
+            __set_size(ptThis, MODEM_DATA_BUFFER_SIZE);
             /* Set attempt counter to zero */
             this.chTryCount = 0;
             /* Set starting packet number to zero */
@@ -803,13 +807,14 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
             if(STATE_PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
                     /* 'C' received, proceed to send packet with file path information */
-									  uint16_t hwFileData = __file_path(ptThis, __get_buffer_addr(ptThis), MODEM_DATA_BUFFER_SIZE);
+                    uint16_t hwFileData = __file_path(ptThis, __get_buffer_addr(ptThis), MODEM_DATA_BUFFER_SIZE);
+
                     if( hwFileData == MODEM_DATA_BUFFER_SIZE) {
                         this.chState = SEND_PACK_PATH;
-                    } else if(hwFileData == 0){
-											  memset(__get_buffer_addr(ptThis),0,MODEM_DATA_BUFFER_SIZE);
-											  this.chState = SEND_PACK_PATH;									  
-										}else {
+                    } else if(hwFileData == 0) {
+                        memset(__get_buffer_addr(ptThis), 0, MODEM_DATA_BUFFER_SIZE);
+                        this.chState = SEND_PACK_PATH;
+                    } else {
                         /* File path retrieval failed, reset state machine */
                         PRINT_ERROR("incorrect size");
                         ymodem_transfer_state(ptThis, STATE_INCORRECT_SIZE);
@@ -820,7 +825,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                     /* Non-C character received; remain in current state */
                     return STATE_INCORRECT_CHAR;
                 }
-            }else {
+            } else {
                 /* Read in progress or other error; remain in current state */
                 break;
             }
@@ -894,12 +899,12 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
 
                     /* Prepare and process file data for transmission */
                     if(hwNextPartData <= MODEM_DATA_BUFFER_SIZE) {
-                        /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */	
-                        __set_size(ptThis,MODEM_DATA_BUFFER_SIZE);											
+                        /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
+                        __set_size(ptThis, MODEM_DATA_BUFFER_SIZE);
                         memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_DATA_BUFFER_SIZE - hwNextPartData);
                     } else if(hwNextPartData <= MODEM_1K_DATA_BUFFER_SIZE) {
                         /* If hwSize is less than 1K buffer size, pad as well */
-                        __set_size(ptThis,MODEM_1K_DATA_BUFFER_SIZE);	
+                        __set_size(ptThis, MODEM_1K_DATA_BUFFER_SIZE);
                         memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_1K_DATA_BUFFER_SIZE - hwNextPartData);
                     } else {
                         /* hwSize too large, reset state machine and return error */
@@ -967,13 +972,13 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                         this.chState = SEND_EOT1;
                     } else if(hwNextPartData <= MODEM_DATA_BUFFER_SIZE) {
                         /* If hwSize is less than buffer size, pad the rest with CTRLZ (EOF marker) */
-											  __set_size(ptThis,MODEM_DATA_BUFFER_SIZE);	
+                        __set_size(ptThis, MODEM_DATA_BUFFER_SIZE);
                         memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_DATA_BUFFER_SIZE - hwNextPartData);
                         this.chState = SEND_PACK_DATA;
                         break;
                     } else if(hwNextPartData <= MODEM_1K_DATA_BUFFER_SIZE) {
                         /* If hwSize is less than 1K buffer size, pad as well */
-											  __set_size(ptThis,MODEM_1K_DATA_BUFFER_SIZE);	
+                        __set_size(ptThis, MODEM_1K_DATA_BUFFER_SIZE);
                         memset(__get_buffer_addr(ptThis) + hwNextPartData, 0x1A, MODEM_1K_DATA_BUFFER_SIZE - hwNextPartData);
                         this.chState = SEND_PACK_DATA;
                         break;
@@ -1016,6 +1021,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                 YMODEM_RECEIVE_RESET_FSM();
                 return STATE_TIMEOUT;
             }
+
             break;
         }
 
@@ -1031,6 +1037,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                 /* EOT sent, proceed to the next state to await NAK from receiver */
                 this.chState = RECEIVE_NAK;
             }
+
             break;
         }
 
@@ -1058,6 +1065,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                 YMODEM_RECEIVE_RESET_FSM();
                 return STATE_TIMEOUT;
             }
+
             break;
         }
 
@@ -1073,6 +1081,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
                 /* EOT sent again, now await for final acknowledgment with ACK */
                 this.chState = RECEIVE_ACK2;
             }
+
             break;
         }
 
