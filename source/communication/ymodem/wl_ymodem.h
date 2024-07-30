@@ -31,18 +31,19 @@ extern "C" {
 #define PRINT_ERROR(message) printf("\nError: %s in file %s at line %d\n", message, __FILE__, __LINE__)
 
 typedef enum {
-    PACKET_CPL                      = 0,     //!< complete
-    PACKET_ON_GOING                 = 1,     //!< on-going
-    PACKET_EOT                      = 2,
-    PACKET_CAN                      = 3,
-    PACKET_TIMEOUT                  = 4,     //!< read timeout
-    PACKET_INCORRECT_HEADER         = 5,     //!< incorrect head char
-    PACKET_INCORRECT_PACKET_NUMBER  = 6,     //!< incorrect packet number
-    PACKET_DUPLICATE_PACKET_NUMBER  = 7,     //!< duplicate packet number
-    PACKET_INCORRECT_CHECKOUT       = 8,     //!< incorrect checkout
-    PACKET_INCORRECT_NBlk           = 9,     //!< incorrect NBlk
-    PACKET_INCORRECT_SIZE           = 10,    //!< incorrect SIZE
-    PACKET_FAIL                     = 11
+    STATE_FINSH                    = 0,     //!< finshed
+    STATE_ON_GOING                 = 1,     //!< on-going
+	  STATE_PACKET_CPL               = 2,     //!< packet complete
+    STATE_EOT                      = 3,
+    STATE_CAN                      = 4,
+    STATE_TIMEOUT                  = 5,     //!< read timeout
+    STATE_INCORRECT_CHAR           = 6,     //!< incorrect char
+	  STATE_INCORRECT_NBlk           = 7,     //!< incorrect NBlk
+    STATE_INCORRECT_PACKET_NUMBER  = 8,     //!< incorrect packet number
+    STATE_DUPLICATE_PACKET_NUMBER  = 9,     //!< duplicate packet number
+    STATE_INCORRECT_CHECKOUT       = 10,    //!< incorrect checkout
+    STATE_INCORRECT_SIZE           = 11,    //!< incorrect SIZE
+    STATE_FAIL                     = 12
 } ymodem_state_t;
 
 typedef struct ymodem_t ymodem_t;
@@ -125,20 +126,10 @@ static inline uint8_t * __get_buffer_addr(ymodem_t *ptObj)
     return ptObj->tOps.pchBuffer;
 }
 
-typedef enum {
-    fsm_ym_err              = -1,    //!< fsm error, error code can be get from other interface
-    fsm_ym_cpl              = 0,     //!< fsm complete
-    fsm_ym_on_going         = 1,     //!< fsm on-going
-    fsm_ym_wait_for_obj     = 2,     //!< fsm wait for object
-    fsm_ym_asyn             = 3,     //!< fsm asynchronose complete, you can check it later.
-    fsm_ym_req_drop         = 4,
-    fsm_ym_req_timeout      = 5,
-} fsm_ym_t;
-
 /* External function declarations for CRC calculation, YMODEM receive, and send operations */
 extern uint16_t ymodem_crc16(unsigned char *q, int len);
-extern fsm_ym_t ymodem_receive(ymodem_t *ptThis);
-extern fsm_ym_t ymodem_send(ymodem_t *ptThis);
+extern ymodem_state_t ymodem_receive(ymodem_t *ptThis);
+extern ymodem_state_t ymodem_send(ymodem_t *ptThis);
 
 /* Initialization function for the YMODEM protocol */
 extern void ymodem_init(ymodem_t *ptThis, ymodem_ops_t *ptOps);
