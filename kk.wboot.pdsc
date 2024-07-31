@@ -196,7 +196,7 @@
 		    <file category="include" name="example/ymodem/intelhex/"/>
 			<file category="include" name="example/ymodem/"/>
             <file category="sourceC" name="example/ymodem/ymodem_ota.c" attr="config" version="0.9.4"/>
-			<file category="sourceC" name="example/ymodem/ymodem_ota.h" attr="config" version="0.9.4"/>
+			<file category="header" name="example/ymodem/ymodem_ota.h" attr="config" version="0.9.4"/>
 			<file category="sourceC" name="example/ymodem/intelhex/intelhex.c"/>
         </files>			
     </component>
