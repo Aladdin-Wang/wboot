@@ -30,6 +30,11 @@ extern "C" {
 #endif
 #define PRINT_ERROR(message) printf("\nError: %s in file %s at line %d\n", message, __FILE__, __LINE__)
 
+#ifndef container_of
+#define container_of(ptr, type, member) \
+    ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
+#endif
+		
 typedef enum {
     STATE_FINSH                    = 0,     //!< finshed
     STATE_ON_GOING                 = 1,     //!< on-going

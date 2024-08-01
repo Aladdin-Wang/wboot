@@ -16,7 +16,7 @@
 ****************************************************************************/
 
 #include "wl_ymodem.h"
-
+#include <assert.h>
 #define SOH            0x01  //!< Start of 128-byte data packet
 #define STX            0x02  //!< Start of 1024-byte data packet
 #define EOT            0x04  //!< End of transmission
@@ -125,11 +125,12 @@ int64_t get_system_time_ms(void)
     return wTimeCount;
 }
 
-static ymodem_state_t ymodem_read_data_with_timeout(ymodem_read_timeout_t *ptThis, ymodem_t *ptObj, uint8_t* pchByte, uint16_t hwSize, uint16_t hwTimeout)
+static ymodem_state_t ymodem_read_data_with_timeout(ymodem_read_timeout_t *ptThis, uint8_t* pchByte, uint16_t hwSize, uint16_t hwTimeout)
 {
     /* Macro to reset the finite state machine (FSM) */
 #define YMODEM_READ_DATA_TIMEOUT_RESET_FSM() do { this.chState = 0; } while(0)
-
+    assert(NULL != ptThis);
+    ymodem_t *ptObj = container_of(ptThis, ymodem_t, tReadDataTimeout);
     /* Enum defining FSM states for receiving a Ymodem packet */
     enum { START, READ_DOING, IS_TIMEOUT, RESET_TIME};
 
@@ -180,15 +181,15 @@ static ymodem_state_t ymodem_read_data_with_timeout(ymodem_read_timeout_t *ptThi
  * handling different stages of the packet reception, error checking, and validation.
  *
  * @param ptThis Pointer to the Ymodem package structure.
- * @param ptObj Pointer to the Ymodem structure.
  * @param chPacketNum The expected packet number to validate against the received packet.
  * @return ymodem_state_t The current state of the packet processing or an error state.
  */
-static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t *ptObj, uint8_t chPacketNum)
+static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, uint8_t chPacketNum)
 {
     /* Macro to reset the finite state machine (FSM) */
 #define YMODEM_RECEIVE_PACKAGE_RESET_FSM() do { this.chState = 0; } while(0)
-
+    assert(NULL != ptThis);
+    ymodem_t *ptObj = container_of(ptThis, ymodem_t, tPackage);
     /* Enum defining FSM states for receiving a Ymodem packet */
     enum { START, READ_HEAD, READ_BLK, READ_NBLK, READ_DATA, READ_CHECK_L, READ_CHECK_H, CHECK_PACKAGE };
 
@@ -202,7 +203,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
         /* Fall through to the next state since there's no break. This is intended for execution continuation. */
         case READ_HEAD: {
             /* Attempt to read the header byte, which determines the packet type or end of transmission. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, &this.chHead, 1, DLY_3S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, &this.chHead, 1, DLY_3S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Successfully read the header. Now identify the packet type or end signal. */
@@ -238,7 +239,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
 
         case READ_BLK: {
             /* Read the packet number, which is a crucial part of validating the integrity of the packet. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, &this.chBlk, 1, DLY_1S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, &this.chBlk, 1, DLY_1S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Packet number successfully read, proceed to read the inverse of the packet number. */
@@ -255,7 +256,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
 
         case READ_NBLK: {
             /* Read the inverse of the packet number for validation purposes. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, &this.chNBlk, 1, DLY_1S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, &this.chNBlk, 1, DLY_1S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Inverse packet number read, check if it correctly complements the packet number. */
@@ -280,7 +281,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
 
         case READ_DATA: {
             /* Read the actual data contained within the Ymodem packet. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, __get_buffer_addr(ptObj), __get_size(ptObj), DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, __get_buffer_addr(ptObj), __get_size(ptObj), DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Data read complete, compute CRC check for validation. */
@@ -300,7 +301,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
         case READ_CHECK_L: {
 
             /* Read the low byte of the CRC from the packet for additional validation. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, &this.chCheck[0], 1, DLY_1S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, &this.chCheck[0], 1, DLY_1S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Low byte of CRC successfully read, continue to high byte. */
@@ -318,7 +319,7 @@ static ymodem_state_t ymodem_receive_package(ymodem_package_t *ptThis, ymodem_t 
         case READ_CHECK_H: {
 
             /* Read the high byte of the CRC from the packet, completing the CRC reading. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, ptObj, &this.chCheck[1], 1, DLY_1S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&ptObj->tReadDataTimeout, &this.chCheck[1], 1, DLY_1S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Combine both CRC bytes to form the complete CRC value received with the packet. */
@@ -382,6 +383,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
 {
     /* Macro to reset the finite state machine (FSM) */
 #define YMODEM_RECEIVE_RESET_FSM()    do{this.chState = 0;}while(0)
+    assert(NULL != ptThis);
     /* Enum defining FSM states for receiving */
     enum { START = 0, SEND_C1, RECEIVE_PACK_PATH, SEND_ACK, SEND_C2, RECEIVE_PACK_DATA, SEND_ANSWER, ANSWER_NAK, RECIVE_EOT, ANSWER_ACK};
 
@@ -408,7 +410,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
 
         case RECEIVE_PACK_PATH: {
             /* Attempting to receive the file path packet, the first step in Ymodem transfer. */
-            ymodem_state_t tPackageState = ymodem_receive_package(&this.tPackage, ptThis, 0);
+            ymodem_state_t tPackageState = ymodem_receive_package(&this.tPackage, 0);
 
             /* Completion of file path package reception. */
             if(tPackageState == STATE_PACKET_CPL) {
@@ -429,6 +431,12 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
                 /* Timeout while waiting for the package, leading to an FSM reset and error signal. */
                 YMODEM_RECEIVE_RESET_FSM();
                 return STATE_TIMEOUT;
+            } else if(tPackageState == STATE_INCORRECT_CHAR) {
+                return STATE_INCORRECT_CHAR;
+            } else if(tPackageState == STATE_INCORRECT_NBlk) {
+                return STATE_INCORRECT_NBlk;
+            }else if(tPackageState == STATE_INCORRECT_CHECKOUT) {
+                return STATE_INCORRECT_CHECKOUT;
             } else {
                 /* If the packet is not yet complete or failed, break to re-evaluate the state. */
                 break;
@@ -469,7 +477,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
 
         case RECEIVE_PACK_DATA: {
             /* Managing the reception of actual file data packets. */
-            ymodem_state_t tPackageState = ymodem_receive_package(&this.tPackage, ptThis, this.chPacketNum);
+            ymodem_state_t tPackageState = ymodem_receive_package(&this.tPackage, this.chPacketNum);
 
             /* Processing the outcome of the packet reception. */
             switch(tPackageState) {
@@ -581,7 +589,7 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
 
         case RECIVE_EOT: {
             /* Attempt to receive EOT reply to conclude the transmission. */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_3S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_3S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Received the final EOT, acknowledge and prepare to conclude the session. */
@@ -630,15 +638,15 @@ ymodem_state_t ymodem_receive(ymodem_t *ptThis)
  * that the process is robust and can handle the sending retries and error checking.
  *
  * @param ptThis Pointer to the Ymodem package structure.
- * @param ptOps Pointer to the Ymodem operations structure containing operational callbacks necessary for data writing.
  * @param chPacketNum The current packet number being sent, which is used for packet sequence control and validation.
  * @return ymodem_state_t The current state of the packet sending process or a completed (PACKET_CPL) state.
  */
-static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, ymodem_t *ptObj, uint8_t chPacketNum)
+static ymodem_state_t ymodem_send_package(ymodem_package_t *ptThis, uint8_t chPacketNum)
 {
     /* Macro to reset the Ymodem send package finite state machine (FSM) */
 #define YMODEM_SEND_PACKAGE_RESET_FSM() do{this.chState = 0;}while(0)
-
+    assert(NULL != ptThis);
+    ymodem_t *ptObj = container_of(ptThis, ymodem_t, tPackage);
     /* Enum defining FSM states for sending a Ymodem packet */
     enum { START = 0, SEND_HEAD, SEND_BLK, SEND_NBLK, SEND_DATA, SEND_CHECK_L, SEND_CHECK_H};
 
@@ -762,7 +770,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
 {
     /* Define macro to reset the FSM state of Ymodem send operation */
 #define YMODEM_SEND_RESET_FSM()    do{this.chState = 0;}while(0)
-
+    assert(NULL != ptThis);
     /* Enumeration of the FSM states */
     enum {
         START = 0,
@@ -802,7 +810,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          * expecting a 'C' character signaling CRC mode.
          */
         case RECEIVE_C1: {
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
@@ -837,7 +845,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          */
         case SEND_PACK_PATH: {
             /* Assemble and send the initial packet with the file path */
-            ymodem_state_t tPackageState = ymodem_send_package(&this.tPackage, ptThis, 0);
+            ymodem_state_t tPackageState = ymodem_send_package(&this.tPackage, 0);
 
             if(tPackageState == STATE_PACKET_CPL) {
                 /* Packet sent successfully, await ACK from receiver */
@@ -854,7 +862,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          */
         case RECEIVE_ACK1: {
             /* Read the next byte expecting an ACK in response to the file path packet */
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 if(this.chByte == ACK) {
@@ -890,7 +898,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          * is ready to receive the data packet.
          */
         case RECEIVE_C2: {
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 if(this.chByte == CRC_C) {
@@ -938,7 +946,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          */
         case SEND_PACK_DATA: {
             /* Send a single ymodem packet and check for completion */
-            ymodem_state_t tPackageState = ymodem_send_package(&this.tPackage, ptThis, this.chPacketNum);
+            ymodem_state_t tPackageState = ymodem_send_package(&this.tPackage, this.chPacketNum);
 
             if(tPackageState == STATE_PACKET_CPL) {
                 /* Packet sent successfully, wait for receiver's response */
@@ -954,7 +962,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          * Expect ACK for success, NAK for retry, or CAN for cancellation.
          */
         case RECEIVE_ANSWER: {
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Successfully received a response from receiver */
@@ -1047,7 +1055,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          * for the next step of termination sequence.
          */
         case RECEIVE_NAK: {
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Check if the byte received is a NAK */
@@ -1090,7 +1098,7 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
          * which would indicate that the transmission has been successfully terminated.
          */
         case RECEIVE_ACK2: {
-            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, ptThis, &this.chByte, 1, DLY_10S);
+            ymodem_state_t tFsm = ymodem_read_data_with_timeout(&this.tReadDataTimeout, &this.chByte, 1, DLY_10S);
 
             if(STATE_PACKET_CPL == tFsm) {
                 /* Check if the byte received is an ACK */
@@ -1135,11 +1143,8 @@ ymodem_state_t ymodem_send(ymodem_t *ptThis)
 void ymodem_init(ymodem_t *ptThis, ymodem_ops_t *ptOps)
 {
     /* Validate all the input pointers to ensure they are not NULL. */
-    if (NULL == ptThis || NULL == ptOps) {
-        /* If any pointer is NULL, the initialization cannot proceed, return false. */
-        return ;
-    }
-
+    assert(NULL != ptThis);
+    assert(NULL != ptOps);
     this.chState = 0;
     /* Assign the provided callback functions to the operations member of the ymodem structure. */
     memcpy(&this.tOps, ptOps, sizeof(this.tOps));

@@ -13,9 +13,7 @@ typedef struct ymodem_receive_t {
     char         *pchFileSize;
     uint32_t      wFileSize;
     uint32_t      wOffSet;
-	
     SIG_SLOT_OBJ;
-	
 } ymodem_receive_t;
 
 typedef struct ymodem_ota_recive_t {

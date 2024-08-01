@@ -85,8 +85,6 @@ fsm_implementation(check_use_peek)
                 if(this.ptFreeList->bIsKeepingContext != false){
                     this.ptFreeList->hwPeekStatus = get_peek_status(this.ptByteInQueue);
                 }                
-                this.ptFreeList = this.ptFreeList->ptNext;
-                transfer_to(IS_END_OF_AGENT);
             }else{
                 get_all_peeked(this.ptByteInQueue);
                 for(check_agent_t *ptNote = this.ptCheckList;ptNote != NULL; ptNote = ptNote->ptNext){
