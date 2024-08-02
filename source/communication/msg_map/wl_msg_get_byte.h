@@ -10,7 +10,7 @@
 #ifndef CHECK_STR_GET_BYTE_H_
 #define CHECK_STR_GET_BYTE_H_
 typedef  struct _get_byte_t get_byte_t;
-typedef bool get_byte_hanlder_t(get_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
+typedef uint16_t get_byte_hanlder_t(get_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
 struct _get_byte_t{
     void *pTarget;
     get_byte_hanlder_t *fnGetByte;

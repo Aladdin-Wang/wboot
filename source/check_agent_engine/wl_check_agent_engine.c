@@ -18,7 +18,7 @@
 #include "wl_check_agent_engine.h"
 #include <string.h>
 #if USE_SERVICE_CHECK_USE_PEEK == ENABLED
-static bool peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
+static uint16_t peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
 def_simple_fsm( check_use_peek,
     def_params(
             check_agent_t *ptFreeList;
@@ -143,7 +143,7 @@ bool agent_unregister(fsm_check_use_peek_t *ptObj,check_agent_t *ptItem)
     return false;
 }
 
-static bool peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength)
+static uint16_t peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength)
 {
     return peek_queue(ptThis->pTarget,pchByte,hwLength);
 }

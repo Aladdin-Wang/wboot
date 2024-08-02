@@ -97,7 +97,7 @@ static fsm_rt_t wl_shell_readline(wl_shell_t *ptObj)
 {
     wl_shell_t *(ptThis) = (wl_shell_t *)ptObj;
     assert(NULL != ptObj);
-	
+
     fsm_rt_t tFsm = shell_read_with_timeout(&ptObj->tReadDataTimeout, &this.chDate, 1, 10);
 
     if(fsm_rt_cpl == tFsm) {
@@ -107,6 +107,7 @@ static fsm_rt_t wl_shell_readline(wl_shell_t *ptObj)
                 this.chLineBuf[this.hwLinePosition++] = this.chDate;
                 enqueue(&this.tByteInQueue, this.chLineBuf, this.hwLinePosition );
             }
+
             memset(this.chLineBuf, 0, sizeof(this.chLineBuf));
             this.hwLinePosition = 0;
         } else if(this.chDate == 0x7f || this.chDate == 0x08 ) { /* handle backspace key */
@@ -130,7 +131,7 @@ static fsm_rt_t wl_shell_readline(wl_shell_t *ptObj)
         }
     } else if(fsm_rt_user_req_timeout == tFsm) {
         wl_shell_echo(ptObj, &this.chDate, 1);
-			  return fsm_rt_cpl;
+        return fsm_rt_cpl;
     }
 
     return fsm_rt_on_going;
@@ -161,7 +162,8 @@ static void wl_shell_echo(wl_shell_t *ptObj, uint8_t *pchData, uint16_t hwLength
                 this.hwCurposPosition++;
                 printf("%c", pchData[i]);
             }
-						this.chDate = 0;
+
+            this.chDate = 0;
         }
     }
 }
@@ -194,7 +196,7 @@ fsm_rt_t wl_shell_exec(wl_shell_t *ptObj)
     return wl_shell_readline(ptObj);
 }
 
-static bool get_byte (get_byte_t *ptThis, uint8_t *pchByte, uint16_t hwLength)
+static uint16_t get_byte (get_byte_t *ptThis, uint8_t *pchByte, uint16_t hwLength)
 {
     return peek_queue(ptThis->pTarget, pchByte, hwLength);
 }

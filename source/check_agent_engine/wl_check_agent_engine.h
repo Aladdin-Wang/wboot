@@ -27,7 +27,7 @@ extern "C" {
 #endif
     
 typedef  struct _peek_byte_t peek_byte_t;
-typedef bool peek_byte_hanlder_t(peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
+typedef uint16_t peek_byte_hanlder_t(peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
 struct _peek_byte_t{
     void *pTarget;
     peek_byte_hanlder_t *fnGetByte;
