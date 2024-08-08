@@ -15,25 +15,9 @@
 *                                                                           *
 ****************************************************************************/
 
-#ifndef __SERVE_MSG_CHECK_STR_H_
-#define __SERVE_MSG_CHECK_STR_H_
-#include "./app_cfg.h"
-#if defined(WL_USING_MSG_MAP)
-#include "../.././fsm/simple_fsm.h"
-#include "wl_msg_get_byte.h"
-#include <string.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
-declare_simple_fsm(check_string);
-extern_fsm_implementation(check_string);
-extern_fsm_initialiser( check_string,
-        args(
-            const char *pchString,
-            get_byte_t *ptGetByte
-        ))
-/*! fsm used to output specified string */
-extern_simple_fsm(check_string,
+#include "msg_check_str.h"
+#if defined(USING_MSG_MAP)
+def_simple_fsm( check_string,
     def_params(
             const char *pchStr;
             uint16_t hwIndex;
@@ -42,8 +26,51 @@ extern_simple_fsm(check_string,
     )
 )
 
-#ifdef __cplusplus
+fsm_initialiser( check_string,
+    args(
+        const char *pchString,
+        get_byte_t *ptGetByte
+    ))
+
+    init_body (
+        if (NULL == pchString || NULL == ptGetByte ) {
+            abort_init();
+        }
+        this.pchStr = pchString;
+        this.ptGetByte = ptGetByte;       
+    )
+
+fsm_implementation(  check_string )
+{
+    def_states( IS_END_OF_STR, INPUT_CHAR,IS_TIMEOUT)
+
+    body_begin();
+
+    on_start(
+        this.hwIndex = 0; 
+        update_state_to(IS_END_OF_STR);
+    )
+
+    state(IS_END_OF_STR) {
+        if(this.pchStr[this.hwIndex] == '\0') {
+            fsm_cpl();
+        }
+        update_state_to(INPUT_CHAR);
+    }
+
+    state(INPUT_CHAR) {
+        if(this.ptGetByte->fnGetByte(this.ptGetByte,&(this.chByte),1)) {       
+            if(this.chByte != this.pchStr[this.hwIndex++]){         
+                fsm_user_req_drop();
+            }
+            update_state_to(IS_END_OF_STR);
+        }
+        reset_fsm();
+    }
+
+    body_end();
 }
+
 #endif
-#endif 
-#endif 
+
+

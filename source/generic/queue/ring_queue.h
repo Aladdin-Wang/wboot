@@ -18,7 +18,7 @@
 #ifndef __SERVE_QUEUE_H_
 #define __SERVE_QUEUE_H_
 #include ".\app_cfg.h"
-#if defined(WL_USING_RINGEQUEUE)
+#if defined(USING_RINGEQUEUE)
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>

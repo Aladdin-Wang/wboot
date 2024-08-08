@@ -15,7 +15,7 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_shell.h"
+#include "micro_shell.h"
 
 #if defined(WL_USING_SHELL)
 #include <stdio.h>

@@ -16,7 +16,7 @@
 ****************************************************************************/
 
 #define __BYTE_QUEUE_CLASS_IMPLEMENT__
-#include "wl_queue.h"
+#include "ring_queue.h"
 
 #if defined(WL_USING_RINGEQUEUE)
 #undef this

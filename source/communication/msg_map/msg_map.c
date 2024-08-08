@@ -15,8 +15,8 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_msg_map.h"
-#if defined(WL_USING_MSG_MAP)
+#include "msg_map.h"
+#if defined(USING_MSG_MAP)
 #include <string.h>
 
 def_simple_fsm( search_msg_map,

@@ -20,7 +20,7 @@
 #include "./app_cfg.h"
 #if defined(WL_USING_MSG_MAP)
 #include "../.././fsm/simple_fsm.h"
-#include "wl_msg_get_byte.h"
+#include "msg_get_byte.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

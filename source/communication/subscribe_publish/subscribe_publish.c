@@ -15,7 +15,7 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_subscribe_publish.h"
+#include "subscribe_publish.h"
 #if defined(WL_USING_SUBSCRIBE_PUBLISH)
 #include <stdio.h>
 #include <stdlib.h>

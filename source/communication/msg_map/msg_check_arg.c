@@ -15,7 +15,7 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_msg_check_arg.h"
+#include "msg_check_arg.h"
 #if defined(WL_USING_MSG_MAP)
 #include <string.h>
 def_simple_fsm( check_arg,

@@ -19,9 +19,9 @@
 #define __SERVE_SUBSCRIBE_AND_PUBLISH_H_
 #include "./app_cfg.h"
 #if defined(WL_USING_SUBSCRIBE_PUBLISH)
-#include "../msg_map/wl_msg_map.h"
-#include "../signals_slots/wl_signals_slots.h"
-#include "../../generic/queue/wl_queue.h"
+#include "../msg_map/msg_map.h"
+#include "../signals_slots/signals_slots.h"
+#include "../../generic/queue/queue.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

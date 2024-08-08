@@ -41,11 +41,11 @@
     #include "cmsis_compiler.h"	
     #define safe_atom_code()                                         \
             for(  uint32_t SAFE_NAME(temp) =                          \
-					      ({uint32_t SAFE_NAME(temp2)=__get_PRIMASK();       \
-						         __disable_irq();                                 \
-						         SAFE_NAME(temp2);}),*SAFE_NAME(temp3) = NULL;    \
-					           SAFE_NAME(temp3)++ == NULL;                      \
-					           __set_PRIMASK(SAFE_NAME(temp)))
+					({uint32_t SAFE_NAME(temp2)=__get_PRIMASK();       \
+                    __disable_irq();                                 \
+                     SAFE_NAME(temp2);}),*SAFE_NAME(temp3) = NULL;    \
+                     SAFE_NAME(temp3)++ == NULL;                      \
+                    __set_PRIMASK(SAFE_NAME(temp)))
 						 
 							
 #endif

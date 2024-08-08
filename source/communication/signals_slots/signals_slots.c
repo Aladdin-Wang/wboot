@@ -15,7 +15,7 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_signals_slots.h"
+#include "signals_slots.h"
 #if defined(WL_USING_SIGNALS_SLOTS)
 /*
  * Function: bool direct_connect(sig_slot_t *ptSender, const char *pchSignal, void *pReceiver, void *pMethod)

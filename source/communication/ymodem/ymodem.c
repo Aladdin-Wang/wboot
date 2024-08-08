@@ -15,7 +15,7 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_ymodem.h"
+#include "ymodem.h"
 #include <assert.h>
 #define SOH            0x01  //!< Start of 128-byte data packet
 #define STX            0x02  //!< Start of 1024-byte data packet
