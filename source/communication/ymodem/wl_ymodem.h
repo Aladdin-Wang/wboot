@@ -38,12 +38,12 @@ extern "C" {
 typedef enum {
     STATE_FINSH                    = 0,     //!< finshed
     STATE_ON_GOING                 = 1,     //!< on-going
-	  STATE_PACKET_CPL               = 2,     //!< packet complete
+    STATE_PACKET_CPL               = 2,     //!< packet complete
     STATE_EOT                      = 3,
     STATE_CAN                      = 4,
     STATE_TIMEOUT                  = 5,     //!< read timeout
     STATE_INCORRECT_CHAR           = 6,     //!< incorrect char
-	  STATE_INCORRECT_NBlk           = 7,     //!< incorrect NBlk
+    STATE_INCORRECT_NBlk           = 7,     //!< incorrect NBlk
     STATE_INCORRECT_PACKET_NUMBER  = 8,     //!< incorrect packet number
     STATE_DUPLICATE_PACKET_NUMBER  = 9,     //!< duplicate packet number
     STATE_INCORRECT_CHECKOUT       = 10,    //!< incorrect checkout
@@ -82,7 +82,7 @@ typedef struct ymodem_package_t {
     uint8_t chNBlk; /* Complement of the block number */
     uint8_t chCheck[2]; /* Checksum/CRC bytes */
     uint16_t hwCheck; /* Calculated checksum/CRC value */
-	  uint16_t hwWriteLen;
+    uint16_t hwWriteLen;
 } ymodem_package_t;
 
 /* Struct for handling the YMODEM protocol interaction */
