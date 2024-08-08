@@ -77,7 +77,7 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 
 		    <file category="include" name="source/flash_blob/"/>	
-			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
+			<file category="sourceC" name="source/flash_blob/flash_blob.c"/>    
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DEV.c"/>        
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DRV.c"/> 
         </files>
@@ -91,7 +91,7 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 
 		    <file category="include" name="source/flash_blob/"/>
-			<file category="sourceC" name="source/flash_blob/wl_flash_blob.c"/>    
+			<file category="sourceC" name="source/flash_blob/flash_blob.c"/>    
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DEV.c"/>        
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DRV.c"/> 
         </files>
@@ -105,7 +105,7 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 
 		    <file category="include" name="source/communication/ymodem/"/>
-            <file category="sourceC" name="source/communication/ymodem/wl_ymodem.c"/>  
+            <file category="sourceC" name="source/communication/ymodem/ymodem.c"/>  
         </files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
@@ -117,7 +117,7 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/generic/queue/"/>
-            <file category="sourceC" name="source/generic/queue/wl_queue.c"/>  
+            <file category="sourceC" name="source/generic/queue/ring_queue.c"/>  
         </files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
@@ -129,7 +129,7 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/communication/signals_slots/"/>
-            <file category="sourceC" name="source/communication/signals_slots/wl_signals_slots.c"/> 
+            <file category="sourceC" name="source/communication/signals_slots/signals_slots.c"/> 
         </files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
@@ -141,10 +141,10 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/communication/shell/"/>
-            <file category="sourceC" name="source/communication/shell/wl_shell.c"/> 
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_arg.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_str.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
+            <file category="sourceC" name="source/communication/shell/micro_shell.c"/> 
+			<file category="sourceC" name="source/communication/msg_map/msg_check_arg.c"/>
+			<file category="sourceC" name="source/communication/msg_map/msg_check_str.c"/>
+			<file category="sourceC" name="source/communication/msg_map/msg_map.c"/>
         </files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
@@ -156,10 +156,10 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/communication/subscribe_publish/"/>
-            <file category="sourceC" name="source/communication/subscribe_publish/wl_subscribe_publish.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_arg.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_check_str.c"/>
-			<file category="sourceC" name="source/communication/msg_map/wl_msg_map.c"/>
+            <file category="sourceC" name="source/communication/subscribe_publish/subscribe_publish.c"/>
+			<file category="sourceC" name="source/communication/msg_map/msg_check_arg.c"/>
+			<file category="sourceC" name="source/communication/msg_map/msg_check_str.c"/>
+			<file category="sourceC" name="source/communication/msg_map/msg_map.c"/>
         </files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
@@ -183,7 +183,7 @@
 			<file category="include" name="source/"/>			
 			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/check_agent_engine/"/>
-            <file category="sourceC" name="source/check_agent_engine/wl_check_agent_engine.c"/> 
+            <file category="sourceC" name="source/check_agent_engine/check_agent_engine.c"/> 
         </files>
 		 <Pre_Include_Global_h>
 #define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
