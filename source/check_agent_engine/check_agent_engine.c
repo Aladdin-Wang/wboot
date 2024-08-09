@@ -15,7 +15,7 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "wl_check_agent_engine.h"
+#include "check_agent_engine.h"
 #include <string.h>
 #if USE_SERVICE_CHECK_USE_PEEK == ENABLED
 static uint16_t peek_byte (peek_byte_t *ptThis,uint8_t *pchByte, uint16_t hwLength);
@@ -39,8 +39,8 @@ fsm_initialiser(check_use_peek,
             abort_init();
         }
         this.ptByteInQueue = ptByteInQueue;
-				this.tPeekByte.pTarget = (void *)(this.ptByteInQueue);
-				this.tPeekByte.fnGetByte = peek_byte;
+        this.tPeekByte.pTarget = (void *)(this.ptByteInQueue);
+        this.tPeekByte.fnGetByte = peek_byte;
     )
 
 

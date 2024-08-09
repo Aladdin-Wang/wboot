@@ -103,7 +103,7 @@
         <description>wboot ymodem</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 
 		    <file category="include" name="source/communication/ymodem/"/>
             <file category="sourceC" name="source/communication/ymodem/ymodem.c"/>  
         </files>
@@ -115,7 +115,7 @@
         <description>wboot queue</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/generic/queue/"/>
             <file category="sourceC" name="source/generic/queue/ring_queue.c"/>  
         </files>
@@ -127,7 +127,7 @@
         <description>wboot signals_slots</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/communication/signals_slots/"/>
             <file category="sourceC" name="source/communication/signals_slots/signals_slots.c"/> 
         </files>
@@ -139,7 +139,7 @@
         <description>wboot shell</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/communication/shell/"/>
             <file category="sourceC" name="source/communication/shell/micro_shell.c"/> 
 			<file category="sourceC" name="source/communication/msg_map/msg_check_arg.c"/>
@@ -154,7 +154,7 @@
         <description>wboot subscribe_publish</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/communication/subscribe_publish/"/>
             <file category="sourceC" name="source/communication/subscribe_publish/subscribe_publish.c"/>
 			<file category="sourceC" name="source/communication/msg_map/msg_check_arg.c"/>
@@ -169,7 +169,7 @@
         <description>wboot bootloader</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/bootloader/"/>
             <file category="sourceC" name="source/bootloader/bootloader.c"/>
         </files>
@@ -181,7 +181,7 @@
         <description>wboot check_agent_engine</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 		
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 		
 		    <file category="include" name="source/check_agent_engine/"/>
             <file category="sourceC" name="source/check_agent_engine/check_agent_engine.c"/> 
         </files>
