@@ -75,28 +75,28 @@
         <description>wboot flash drive</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 
 		    <file category="include" name="source/flash_blob/"/>	
 			<file category="sourceC" name="source/flash_blob/flash_blob.c"/>    
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DEV.c"/>        
 			<file category="sourceC" name="source/flash_blob/flash/STM32_FLASH_DRV.c"/> 
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>		
     </component>
     <component Cclass="BootServe" Cversion="0.9.4" Csub="FlashDrv" Cgroup="components" Cvariant="GD32"  condition="FlashDrv">
         <description>wboot flash drive</description>
         <files>
 			<file category="include" name="source/"/>			
-			<file category="header" name="template/wl_user_app_cfg.h" version="0.9.4" attr="config"/> 
+			<file category="header" name="template/user_app_cfg.h" version="0.9.4" attr="config"/> 
 		    <file category="include" name="source/flash_blob/"/>
 			<file category="sourceC" name="source/flash_blob/flash_blob.c"/>    
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DEV.c"/>        
 			<file category="sourceC" name="source/flash_blob/flash/GD32_FLASH_DRV.c"/> 
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>	
     <component Cclass="BootServe" Cversion="0.9.4" Csub="ymodem" Cgroup="components" condition="ymodem">
@@ -108,7 +108,7 @@
             <file category="sourceC" name="source/communication/ymodem/ymodem.c"/>  
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>	
     <component Cclass="BootServe" Cversion="0.9.4" Csub="queue" Cgroup="components" condition="queue">
@@ -120,7 +120,7 @@
             <file category="sourceC" name="source/generic/queue/ring_queue.c"/>  
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>
     <component Cclass="BootServe" Cversion="0.9.4" Csub="signals_slots" Cgroup="components" condition="signals_slots">
@@ -132,7 +132,7 @@
             <file category="sourceC" name="source/communication/signals_slots/signals_slots.c"/> 
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>	
     <component Cclass="BootServe" Cversion="0.9.4" Csub="shell" Cgroup="components" condition="shell">
@@ -147,7 +147,7 @@
 			<file category="sourceC" name="source/communication/msg_map/msg_map.c"/>
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>	
     <component Cclass="BootServe" Cversion="0.9.4" Csub="subscribe_publish" Cgroup="components" condition="subscribe_publish">
@@ -162,7 +162,7 @@
 			<file category="sourceC" name="source/communication/msg_map/msg_map.c"/>
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>		
     <component Cclass="BootServe" Cversion="0.9.4" Csub="Bootloader" Cgroup="components" condition="Bootloader">
@@ -174,7 +174,7 @@
             <file category="sourceC" name="source/bootloader/bootloader.c"/>
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>	
     <component Cclass="BootServe" Cversion="0.9.4" Csub="check_agent_engine" Cgroup="components" condition="check_agent_engine">
@@ -186,7 +186,7 @@
             <file category="sourceC" name="source/check_agent_engine/check_agent_engine.c"/> 
         </files>
 		 <Pre_Include_Global_h>
-#define __USER_APP_CFG_H__ "wl_user_app_cfg.h"
+#define __USER_APP_CFG_H__ "user_app_cfg.h"
          </Pre_Include_Global_h>			
     </component>	
 	
