@@ -18,7 +18,7 @@
 #ifndef __SERVE_SIGNALS_SLOTS_H_
 #define __SERVE_SIGNALS_SLOTS_H_
 #include ".\app_cfg.h"
-#if defined(WL_USING_SIGNALS_SLOTS)
+#if defined(USING_SIGNALS_SLOTS)
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>

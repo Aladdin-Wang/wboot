@@ -1,6 +1,6 @@
 #ifndef APPLICATIONS_CHECK_AGENT_XMODEM_RECEIVE_H_
 #define APPLICATIONS_CHECK_AGENT_XMODEM_RECEIVE_H_
-#include "wl_ymodem.h"
+#include "ymodem.h"
 
 typedef struct ymodem_receive_t {
     ymodem_t      parent;

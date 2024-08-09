@@ -21,7 +21,7 @@
 #if defined(WL_USING_SHELL)
 #include "../msg_map/msg_map.h"
 #include "../signals_slots/signals_slots.h"
-#include "../../generic/queue/queue.h"
+#include "../../generic/queue/ring_queue.h"
 #include "check_agent_engine.h"
 /**
  * @ingroup msh

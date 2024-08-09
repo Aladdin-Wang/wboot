@@ -23,9 +23,9 @@
 // </h>
 // <e>Msg Map Configuration
 // <i> Enables msg_map
-#define WL_USING_MSG_MAP         1
-#if WL_USING_MSG_MAP == 0
-    #undef WL_USING_MSG_MAP
+#define USING_MSG_MAP         1
+#if USING_MSG_MAP == 0
+    #undef USING_MSG_MAP
 #endif
 // <o>The maximum length of parameters <0-128>
 //  <i>Default: 128
@@ -38,21 +38,21 @@
 // <h>Flash BLOB Configuration
 // <c1>Flash BLOB Management
 //  <i>Flash BLOB Management
-#define WL_USING_FLASH_BLOB
+#define USING_FLASH_BLOB
 // </c>
 // </h>
 
 // <h>Check Use Peek
 // <c1>check use peek engine
 //  <i>check use peek engine
-#define WL_USING_CHECK_ENGINE
+#define USING_CHECK_ENGINE
 // </c>
 // </h>
 
 // <e>Shell Configuration
 // <i> Enables shell
-#define WL_USING_SHELL         1
-#if WL_USING_SHELL == 0
+#define USING_SHELL         1
+#if USING_SHELL == 0
     #undef WL_USING_SHELL
 #endif
 // <q>Use echo mode
@@ -65,15 +65,15 @@
 // <h>IPC(Inter-process communication) Configuration
 // <c1>Using Ring Queue
 //  <i>Using Ring Queue
-#define WL_USING_RINGEQUEUE
+#define USING_RINGEQUEUE
 // </c>
 // <c1>Using Signals-Slots
 //  <i>Using Signals-Slots
-#define WL_USING_SIGNALS_SLOTS
+#define USING_SIGNALS_SLOTS
 // </c>
 // <c1>Using Subscribe-Publish
 //  <i>Using Subscribe-Publish
-#define WL_USING_SUBSCRIBE_PUBLISH
+#define USING_SUBSCRIBE_PUBLISH
 // </c>
 // <c1>Using Event
 //  <i>Using Event
@@ -92,9 +92,9 @@
 // </h>
 // <e>BootLoader Configuration
 // <i> Enables BootLoader
-#define WL_USING_BOOT         1
-#if WL_USING_BOOT == 0
-    #undef WL_USING_BOOT
+#define USING_BOOT         1
+#if USING_BOOT == 0
+    #undef USING_BOOT
 #endif
 // <o>The starting address of the app
 //  <i>Default: 0x8020000

@@ -18,7 +18,7 @@
 #define __BYTE_QUEUE_CLASS_IMPLEMENT__
 #include "ring_queue.h"
 
-#if defined(WL_USING_RINGEQUEUE)
+#if defined(USING_RINGEQUEUE)
 #undef this
 #define this        (*ptThis)
 
